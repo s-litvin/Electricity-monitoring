@@ -1,8 +1,12 @@
-<div><canvas id = "myChart"></canvas></div>
+<div>
+    <canvas id = "myChart"></canvas>
+</div>
+<button onclick="loadChart(200)">200</button>
+<button onclick="loadChart(800)">800</button>
 
-    <script src = "https://cdn.jsdelivr.net/npm/chart.js"> </script>
+<script src = "https://cdn.jsdelivr.net/npm/chart.js"> </script>
 
-    <script>
+<script>
     function httpGetAsync(theUrl, callback) {
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = function() {
@@ -10,62 +14,72 @@
                 callback(xmlHttp.responseText);
             }
         }
-        xmlHttp.open("GET", theUrl, true); // true for asynchronous 
+        xmlHttp.open("GET", theUrl, true); // true for asynchronous
         xmlHttp.send(null);
     }
 
 
-function convertTZ(date, tzString) {
-    return new Date((typeof date === "string" ? new Date(date) : date).toLocaleString("en-US", {timeZone: tzString}));   
-}
-
-httpGetAsync('https://api.thingspeak.com/channels/1968788/feeds.json?results=800',
-    function(data) {
-	let channels = JSON.parse(data);
-        console.log(channels);
-        var field1Data = [];
-        var field2Data = [];
-        
-        for (let i = 0; i < channels.feeds.length; i++){
-	  	let obj = channels.feeds[i];
-	  	let dateUTC = obj.created_at;
-
-		let convertedDate = convertTZ(dateUTC, "Europe/Kiev").toLocaleString("en-GB");
-		
-		field1Data[i] = {x: convertedDate, y: obj.field1 === null ? 0 : obj.field1};
-	  	field2Data[i] = {x: convertedDate, y: obj.field2};
-	}
-
-        const ctx = document.getElementById('myChart');
-
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                //labels: ['Light status', 'Time period'],
-                datasets: [{
-                        label: 'Проверка электричества',
-                        data: field1Data,
-                        borderWidth: 1
-                    }
-                    //,
-                    //{
-                    //type: 'line',
-                        //label: 'Контрольная метка времени',
-                        //data: field2Data,
-                        //borderWidth: 1
-                    //}
-                ]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
+    function convertTZ(date, tzString) {
+        return new Date((typeof date === "string" ? new Date(date) : date).toLocaleString("en-US", {timeZone: tzString}));
     }
-);
+
+    const ctx = document.getElementById('myChart');
+    var chart = new Chart(ctx, {
+        type: 'bar',
+        data: {datasets: [{data: []}]},
+    });
+    function loadChart(dataSize) {
+
+
+        chart.destroy();
+        
+        httpGetAsync('https://api.thingspeak.com/channels/1968788/feeds.json?results=' + dataSize,
+            function(data) {
+                let channels = JSON.parse(data);
+                console.log(channels);
+                let field1Data = [];
+                // let field2Data = [];
+
+                for (let i = 0; i < channels.feeds.length; i++){
+                    let obj = channels.feeds[i];
+                    let dateUTC = obj.created_at;
+                    let convertedDate = convertTZ(dateUTC, "Europe/Kiev").toLocaleString("en-GB");
+                    field1Data[i] = {x: convertedDate, y: obj.field1 === null ? 0 : obj.field1};
+                    // field2Data[i] = {x: convertedDate, y: obj.field2};
+                }
+
+                chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        //labels: ['Light status', 'Time period'],
+                        datasets: [{
+                            label: 'Проверка электричества',
+                            data: field1Data,
+                            borderWidth: 1
+                        }
+                            //,
+                            //{
+                            //type: 'line',
+                            //label: 'Контрольная метка времени',
+                            //data: field2Data,
+                            //borderWidth: 1
+                            //}
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+            }
+
+        );
+    }
+
+    loadChart(800);
 
 </script>
