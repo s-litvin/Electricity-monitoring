@@ -1,21 +1,27 @@
 <html>
 <head>
-    <meta http-equiv="refresh" content="120">
+    <meta http-equiv="refresh" content="30">
 </head>
 <body>
 
 
-<button onClick="loadChart(200)">4 часа</button>
-<button onClick="loadChart(800)">16 часов</button>
-<button onClick="loadChart(1600)">сутки</button>
-<button onClick="loadChart(9000)">неделя</button>
+<button onClick="gotourl(200)">4 часа</button>
+<button onClick="gotourl(800)">16 часов</button>
+<button onClick="gotourl(1600)">сутки</button>
+<button onClick="gotourl(9000)">неделя</button>
 <div>
     <canvas id="myChart" height="50"></canvas>
 </div>
 
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
+
+    function gotourl(datasize){
+        window.location.href = '?datasize=' + datasize;
+    }
+
     function httpGetAsync(theUrl, callback) {
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = function () {
@@ -26,6 +32,25 @@
         xmlHttp.open("GET", theUrl, true); // true for asynchronous
         xmlHttp.send(null);
     }
+
+    function getSearchParameters() {
+        var prmstr = window.location.search.substr(1);
+        return prmstr != null && prmstr != "" ? transformToAssocArray(prmstr) : {};
+    }
+
+    function transformToAssocArray( prmstr ) {
+        let params = {};
+        let prmarr = prmstr.split("&");
+        for (let i = 0; i < prmarr.length; i++) {
+            let tmparr = prmarr[i].split("=");
+            params[tmparr[0]] = tmparr[1];
+        }
+        return params;
+    }
+
+    let params = getSearchParameters();
+
+    let datasize = params.datasize ?? 200;
 
 
     function convertTZ(date, tzString) {
@@ -66,8 +91,8 @@
                             label: 'Проверка электричества пройдена',
                             data: field1Data,
                             borderWidth: 0,
-                            categoryPercentage: 1.0,
-                            barPercentage: 2.0,
+                            categoryPercentage: 2.0,
+                            barPercentage: 1.0,
                         }
                             //,
                             //{
@@ -97,7 +122,7 @@
         );
     }
 
-    loadChart(200);
+    loadChart(datasize);
 
 </script>
 </body>
