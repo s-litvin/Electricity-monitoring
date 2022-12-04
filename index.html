@@ -41,19 +41,19 @@ httpGetAsync('https://api.thingspeak.com/channels/1968788/feeds.json?results=200
         new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['Light status', 'Time period'],
+                //labels: ['Light status', 'Time period'],
                 datasets: [{
-                        label: 'Electicity check',
+                        label: 'Проверка электричества',
                         data: field1Data,
                         borderWidth: 1
                     }
-                    ,
-                    {
-                    	type: 'line',
-                        label: 'Time period',
-                        data: field2Data,
-                        borderWidth: 1
-                    }
+                    //,
+                    //{
+                    //type: 'line',
+                        //label: 'Контрольная метка времени',
+                        //data: field2Data,
+                        //borderWidth: 1
+                    //}
                 ]
             },
             options: {
