@@ -3,7 +3,7 @@
 <button onClick="loadChart(1600)">сутки</button>
 <button onClick="loadChart(9000)">неделя</button>
 <div>
-    <canvas id="myChart"></canvas>
+    <canvas id="myChart" height="50"></canvas>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -69,6 +69,7 @@
                             //}
                         ]
                     },
+                    maintainAspectRatio: false,
                     options: {
                         scales: {
                             y: {
