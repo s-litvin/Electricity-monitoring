@@ -1,15 +1,17 @@
 <div>
-    <canvas id = "myChart"></canvas>
+    <canvas id="myChart"></canvas>
 </div>
-<button onclick="loadChart(200)">200</button>
-<button onclick="loadChart(800)">800</button>
+<button onClick="loadChart(200)">4 часа</button>
+<button onClick="loadChart(800)">16 часов</button>
+<button onClick="loadChart(1600)">сутки</button>
+<button onClick="loadChart(9000)">неделя</button>
 
-<script src = "https://cdn.jsdelivr.net/npm/chart.js"> </script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
     function httpGetAsync(theUrl, callback) {
         var xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = function() {
+        xmlHttp.onreadystatechange = function () {
             if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
                 callback(xmlHttp.responseText);
             }
@@ -28,19 +30,20 @@
         type: 'bar',
         data: {datasets: [{data: []}]},
     });
+
     function loadChart(dataSize) {
 
 
         chart.destroy();
-        
+
         httpGetAsync('https://api.thingspeak.com/channels/1968788/feeds.json?results=' + dataSize,
-            function(data) {
+            function (data) {
                 let channels = JSON.parse(data);
                 console.log(channels);
                 let field1Data = [];
                 // let field2Data = [];
 
-                for (let i = 0; i < channels.feeds.length; i++){
+                for (let i = 0; i < channels.feeds.length; i++) {
                     let obj = channels.feeds[i];
                     let dateUTC = obj.created_at;
                     let convertedDate = convertTZ(dateUTC, "Europe/Kiev").toLocaleString("en-GB");
@@ -76,10 +79,9 @@
                 });
 
             }
-
         );
     }
 
-    loadChart(800);
+    loadChart(200);
 
 </script>
