@@ -4,6 +4,7 @@
 </head>
 <body>
 
+<p>Статус: <span id="status"></span></p>
 
 <button onClick="gotourl(200)">4 часа</button>
 <button onClick="gotourl(800)">16 часов</button>
@@ -12,7 +13,6 @@
 <div>
     <canvas id="myChart" height="50"></canvas>
 </div>
-
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -52,7 +52,6 @@
 
     let datasize = params.datasize ?? 200;
 
-
     function convertTZ(date, tzString) {
         return new Date((typeof date === "string" ? new Date(date) : date).toLocaleString("en-US", {timeZone: tzString}));
     }
@@ -64,7 +63,6 @@
     });
 
     function loadChart(dataSize) {
-
 
         chart.destroy();
 
@@ -82,6 +80,11 @@
                     field1Data[i] = {x: convertedDate, y: obj.field1 === null ? 0 : obj.field1};
                     // field2Data[i] = {x: convertedDate, y: obj.field2};
                 }
+
+                let isOnline = field1Data[channels.feeds.length - 1].field1 > 0;
+                document.getElementById("status").innerHTML = isOnline ? 'Свет есть' : 'Нет света';
+                document.getElementById("status").style.background = isOnline ? 'green' : 'red';
+                document.getElementById("status").style.color = 'white';
 
                 chart = new Chart(ctx, {
                     type: 'bar',
