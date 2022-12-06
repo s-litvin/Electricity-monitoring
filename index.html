@@ -81,7 +81,7 @@
                     // field2Data[i] = {x: convertedDate, y: obj.field2};
                 }
 
-                let isOnline = field1Data[channels.feeds.length - 1].field1 > 0;
+                let isOnline = field1Data[channels.feeds.length - 1].y > 0;
                 document.getElementById("status").innerHTML = isOnline ? 'Свет есть' : 'Нет света';
                 document.getElementById("status").style.background = isOnline ? 'green' : 'red';
                 document.getElementById("status").style.color = 'white';
