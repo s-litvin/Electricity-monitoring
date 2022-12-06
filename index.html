@@ -71,14 +71,20 @@
                 let channels = JSON.parse(data);
                 console.log(channels);
                 let field1Data = [];
-                // let field2Data = [];
+                //let field2Data = [];
+                let bgColor = [];
 
                 for (let i = 0; i < channels.feeds.length; i++) {
                     let obj = channels.feeds[i];
                     let dateUTC = obj.created_at;
                     let convertedDate = convertTZ(dateUTC, "Europe/Kiev").toLocaleString("en-GB");
                     field1Data[i] = {x: convertedDate, y: obj.field1 === null ? 0 : obj.field1};
-                    // field2Data[i] = {x: convertedDate, y: obj.field2};
+                    field1Data[i] = {x: convertedDate, y: 2};
+                    if (i > 0 && channels.feeds[i].field1 === null && channels.feeds[i - 1].field1 === null) {
+			bgColor[i] = 'rgba(255, 0, 0, 0.2)';
+                    } else {
+			bgColor[i] = 'rgba(0, 255, 0, 0.2)';
+                    }
                 }
 
                 let isOnline = field1Data[channels.feeds.length - 1].y > 0 || field1Data[channels.feeds.length - 2].y > 0;
@@ -93,18 +99,16 @@
                         datasets: [{
                             label: 'Проверка электричества пройдена',
                             data: field1Data,
+                            backgroundColor: bgColor,
                             borderWidth: 0,
                             categoryPercentage: 2.0,
                             barPercentage: 1.0,
                         }
-                            //,
-                            //{
-                            //type: 'line',
-                            //label: 'Контрольная метка времени',
-                            //data: field2Data,
-                            //borderWidth: 1
-                            //}
-                        ]
+                            ,
+                        {
+                            label: 'Проверка электричества не пройдена',
+                            backgroundColor: '#ffcccc',
+                        }]
                     },
                     maintainAspectRatio: false,
                     options: {
@@ -114,7 +118,7 @@
                                 beginAtZero: true,
                                 grid: {
                                     drawBorder: false,
-                                    color: '#ffffff',
+                                    color: 'rgba(255, 0, 0, 0.2)',
                                 },
                             }
                         }
