@@ -87,7 +87,8 @@
                     }
                 }
 
-                let isOnline = field1Data[channels.feeds.length - 1].y > 0 || field1Data[channels.feeds.length - 2].y > 0;
+                let isOnline = bgColor[bgColor.length - 1] != 'rgba(255, 0, 0, 0.2)' && bgColor[bgColor.length - 1] != 'rgba(255, 0, 0, 0.2)';
+                
                 document.getElementById("status").innerHTML = isOnline ? 'Свет есть' : 'Нет света';
                 document.getElementById("status").style.background = isOnline ? 'green' : 'red';
                 document.getElementById("status").style.color = 'white';
