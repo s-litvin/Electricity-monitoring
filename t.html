@@ -1,0 +1,184 @@
+<html>
+<head>
+<!--  <meta http-equiv="refresh" content="30">-->
+</head>
+<body>
+<h2 style="font-family:sans-serif"><i>ЭлектроАнтон-4600</i></h2>
+<p>Статус: <span id="status"></span></p>
+
+<button onClick="gotourl(200)">6 часов</button>
+<button onClick="gotourl(800)">18 часов</button>
+<button onClick="gotourl(1600)">1 день</button>
+<button onClick="gotourl(3000)">2 дня</button>
+<button onClick="gotourl(9000)">неделя</button>
+<div>
+  <canvas id="myChart" height="50"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
+<script>
+
+  function gotourl(datasize){
+    window.location.href = '?datasize=' + datasize;
+  }
+
+  function httpGetAsync(theUrl, callback) {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function () {
+      if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+        callback(xmlHttp.responseText);
+      }
+    }
+    xmlHttp.open("GET", theUrl, true);
+    xmlHttp.send(null);
+  }
+
+  function getSearchParameters() {
+    var prmstr = window.location.search.substr(1);
+    return prmstr != null && prmstr != "" ? transformToAssocArray(prmstr) : {};
+  }
+
+  function transformToAssocArray( prmstr ) {
+    let params = {};
+    let prmarr = prmstr.split("&");
+    for (let i = 0; i < prmarr.length; i++) {
+      let tmparr = prmarr[i].split("=");
+      params[tmparr[0]] = tmparr[1];
+    }
+    return params;
+  }
+
+  let params = getSearchParameters();
+
+  let datasize = params.datasize ?? 200;
+
+  function convertTZ(date, tzString) {
+    return new Date((typeof date === "string" ? new Date(date) : date).toLocaleString("en-US", {timeZone: tzString}));
+  }
+
+  const ctx = document.getElementById('myChart');
+  var chart = new Chart(ctx, {
+    type: 'bar',
+    data: {datasets: [{data: []}]},
+  });
+
+  function loadChart(dataSize) {
+
+    chart.destroy();
+
+    httpGetAsync('https://api.thingspeak.com/channels/1968788/fields/1.json?results=' + dataSize,
+            function (data) {
+              let channels = JSON.parse(data);
+              // let channels = JSON.parse('{"channel":{"id":2013961,"name":"Test","description":"test","latitude":"0.0","longitude":"0.0","field1":"a","field2":"b","created_at":"2023-01-22T16:08:11Z","updated_at":"2023-01-22T16:08:11Z","last_entry_id":1192},"feeds":[{"created_at":"2023-01-23T19:36:46Z","entry_id":1113,"field1":"8"},{"created_at":"2023-01-23T19:38:46Z","entry_id":1114,"field1":"8"},{"created_at":"2023-01-23T19:40:46Z","entry_id":1115,"field1":"8"},{"created_at":"2023-01-23T19:42:46Z","entry_id":1116,"field1":"8"},{"created_at":"2023-01-23T19:44:46Z","entry_id":1117,"field1":"8"},{"created_at":"2023-01-23T19:46:46Z","entry_id":1118,"field1":"8"},{"created_at":"2023-01-23T19:48:46Z","entry_id":1119,"field1":"8"},{"created_at":"2023-01-23T19:50:46Z","entry_id":1120,"field1":"8"},{"created_at":"2023-01-23T19:52:46Z","entry_id":1121,"field1":"8"},{"created_at":"2023-01-23T19:54:46Z","entry_id":1122,"field1":"8"},{"created_at":"2023-01-23T20:14:46Z","entry_id":1132,"field1":"8"},{"created_at":"2023-01-23T20:16:46Z","entry_id":1133,"field1":"8"},{"created_at":"2023-01-23T20:18:46Z","entry_id":1134,"field1":"8"},{"created_at":"2023-01-23T20:20:46Z","entry_id":1135,"field1":"8"},{"created_at":"2023-01-23T20:22:46Z","entry_id":1136,"field1":"8"},{"created_at":"2023-01-23T20:24:46Z","entry_id":1137,"field1":"8"},{"created_at":"2023-01-23T20:26:46Z","entry_id":1138,"field1":"8"},{"created_at":"2023-01-23T20:28:46Z","entry_id":1139,"field1":"8"},{"created_at":"2023-01-23T20:30:46Z","entry_id":1140,"field1":"8"},{"created_at":"2023-01-23T20:32:46Z","entry_id":1141,"field1":"8"},{"created_at":"2023-01-23T20:34:46Z","entry_id":1142,"field1":"8"},{"created_at":"2023-01-23T20:52:46Z","entry_id":1151,"field1":"8"},{"created_at":"2023-01-23T20:54:46Z","entry_id":1152,"field1":"8"},{"created_at":"2023-01-23T20:56:46Z","entry_id":1153,"field1":"8"},{"created_at":"2023-01-23T20:58:46Z","entry_id":1154,"field1":"8"},{"created_at":"2023-01-23T21:00:46Z","entry_id":1155,"field1":"8"},{"created_at":"2023-01-23T21:02:46Z","entry_id":1156,"field1":"8"},{"created_at":"2023-01-23T21:04:46Z","entry_id":1157,"field1":"8"},{"created_at":"2023-01-23T21:06:46Z","entry_id":1158,"field1":"8"},{"created_at":"2023-01-23T21:08:46Z","entry_id":1159,"field1":"8"},{"created_at":"2023-01-23T21:10:46Z","entry_id":1160,"field1":"8"},{"created_at":"2023-01-23T21:12:46Z","entry_id":1161,"field1":"8"},{"created_at":"2023-01-23T21:14:46Z","entry_id":1162,"field1":"8"},{"created_at":"2023-01-23T21:16:46Z","entry_id":1163,"field1":"8"},{"created_at":"2023-01-23T21:18:46Z","entry_id":1164,"field1":"8"},{"created_at":"2023-01-23T21:20:46Z","entry_id":1165,"field1":"8"},{"created_at":"2023-01-23T21:22:46Z","entry_id":1166,"field1":"8"},{"created_at":"2023-01-23T21:24:46Z","entry_id":1167,"field1":"8"},{"created_at":"2023-01-23T21:26:46Z","entry_id":1168,"field1":"8"},{"created_at":"2023-01-23T21:28:46Z","entry_id":1169,"field1":"8"},{"created_at":"2023-01-23T21:30:46Z","entry_id":1170,"field1":"8"},{"created_at":"2023-01-23T21:32:46Z","entry_id":1171,"field1":"8"},{"created_at":"2023-01-23T21:34:46Z","entry_id":1172,"field1":"8"},{"created_at":"2023-01-23T21:36:46Z","entry_id":1173,"field1":"8"},{"created_at":"2023-01-23T21:38:46Z","entry_id":1174,"field1":"8"},{"created_at":"2023-01-23T21:40:46Z","entry_id":1175,"field1":"8"},{"created_at":"2023-01-23T21:42:46Z","entry_id":1176,"field1":"8"},{"created_at":"2023-01-23T21:44:46Z","entry_id":1177,"field1":"8"},{"created_at":"2023-01-23T21:46:46Z","entry_id":1178,"field1":"8"},{"created_at":"2023-01-23T21:48:46Z","entry_id":1179,"field1":"8"},{"created_at":"2023-01-23T21:50:46Z","entry_id":1180,"field1":"8"},{"created_at":"2023-01-23T21:52:46Z","entry_id":1181,"field1":"8"},{"created_at":"2023-01-23T21:54:08Z","entry_id":1182,"field1":"8"},{"created_at":"2023-01-23T21:54:28Z","entry_id":1183,"field1":"8"}]}');
+              console.log(channels);
+              let field1Data = [];
+              //let field2Data = [];
+              let bgColor = [];
+              let minDate;
+
+              var newArray = channels.feeds.filter(function (el) {
+                return el.field1 != null;
+              });
+
+              console.log(newArray);
+
+              let lasDate;
+
+              for (let i = 0; i < newArray.length; i++) {
+
+
+                let obj = newArray[i];
+
+                let dateUTC = obj.created_at;
+                // let convertedDate = convertTZ(dateUTC, "Europe/Kiev").toLocaleString("uk-UK");
+                let d = new Date(Date.parse(dateUTC) + 60*60*2);
+                let convertedDate = d.getFullYear() + '-' + ("00" + (d.getMonth() + 1)).slice(-2) + '-' + ("00" + d.getDate()).slice(-2) + ' ' + ("00" + d.getHours()).slice(-2) + ':' + ("00" + d.getMinutes()).slice(-2) + ':' + ("00" + d.getSeconds()).slice(-2);;
+                field1Data[i] = {x: convertedDate, y: 2};
+                if (i == 0) {
+                  minDate = convertedDate;
+                }
+                bgColor[i] = '#66ff99';
+
+                if (i == newArray.length - 1) {
+                  lasDate = Date.parse(dateUTC) + 60*60*2;
+                  console.log('LastDate: ', dateUTC);
+                }
+              }
+
+              let isOnline = Math.floor((Date.parse(new Date()) - lasDate) / 1000) / 60 <= 2;
+              console.log(isOnline);
+
+
+              document.getElementById("status").innerHTML = isOnline ? 'Свет есть' : 'Нет света';
+              document.getElementById("status").style.background = isOnline ? 'green' : 'red';
+              document.getElementById("status").style.color = 'white';
+
+              chart = new Chart(ctx, {
+                // type: 'line',
+                type: 'bar',
+                data: {
+                  //labels: ['Light status', 'Time period'],
+                  datasets: [{
+                    label: 'Проверка электричества пройдена',
+                    data: field1Data,
+                    backgroundColor: bgColor,
+                    borderWidth: 0,
+                    categoryPercentage: 1.0,
+                    barPercentage: 1.0,
+                  },
+                    {
+                      label: 'Проверка электричества не пройдена',
+                      data: [{x: minDate, y: 2}],
+                      backgroundColor: '#ffcccc',
+                      categoryPercentage: 100.0,
+                      barPercentage: 100.0,
+                    }]
+                },
+                maintainAspectRatio: false,
+                options: {
+                  plugins: {
+                    tooltip: {
+                      filter: function (tooltipItem) {
+                        return tooltipItem.datasetIndex === 0;
+                      }
+                    },
+                  },
+                  scales: {
+                    y: {
+                      display: false,
+                      beginAtZero: true,
+                      grid: {
+                        drawBorder: false,
+                      },
+                    },
+                    x: {
+                      stacked: true,
+                      type: 'time',
+                      time: {
+                        unit: 'minute',
+                        displayFormats: {
+                          minute: "HH:mm, dd MMM"
+                        }
+                      },
+                      min: minDate,
+                      max: new Date(),
+                      title: {
+                        display: true,
+                        text: 'Date'
+                      }
+                    },
+                  }
+                }
+              });
+
+            }
+    );
+  }
+
+  loadChart(datasize);
+
+</script>
+</body>
+</html>
