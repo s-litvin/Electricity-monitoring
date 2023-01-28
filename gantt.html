@@ -11,6 +11,8 @@
 <button onClick="gotourl(1600)">1 день</button>
 <button onClick="gotourl(3000)">2 дня</button>
 <button onClick="gotourl(9000)">неделя</button>
+<p></p>
+
 <div>
   <canvas id="myChart" height="50"></canvas>
 </div>
@@ -67,6 +69,27 @@
   function convertDateTimeToKyivTZ(datetime) {
     let d = new Date(Date.parse(datetime) + 60 * 60 * 2); // +2 hours
     return d.getFullYear() + '-' + ("00" + (d.getMonth() + 1)).slice(-2) + '-' + ("00" + d.getDate()).slice(-2) + ' ' + ("00" + d.getHours()).slice(-2) + ':' + ("00" + d.getMinutes()).slice(-2) + ':' + ("00" + d.getSeconds()).slice(-2);
+  }
+
+  function formatDateTime(dateTime) {
+
+    let input = dateTime;
+    let date = new Date(input);
+
+    let options = {
+      hour: 'numeric',
+      minute: 'numeric'
+    };
+
+    let timeString = date.toLocaleString('uk-UK', options);
+
+    options = {
+      day: 'numeric',
+      month: 'short'
+    };
+
+    let dateString = date.toLocaleString('uk-UK', options);
+    return timeString + ', ' + dateString;
   }
 
 
@@ -140,16 +163,34 @@
           }
 
           let dataset = [];
+          let datasets = [{
+              label: 'Start',
+              data: [{x: intervals[0].start, y: 0}],
+              categoryPercentage: 1,
+              barPercentage: 1,
+            }
+          ];
+
           for (let i = 0; i < intervals.length; i++) {
             intervals[i].start = convertDateTimeToKyivTZ(intervals[i].start);
             intervals[i].stop = convertDateTimeToKyivTZ(intervals[i].stop);
 
             bgColor[i] = intervals[i].isGap ? '#ff7777' : '#ccffcc';
-            // thickness[i] = intervals[i].duration / 60;
             dataset.push({x: intervals[i].start, y: 2});
+
+            let label = [
+                (intervals[i].isGap ? '🕯️' : '⚡') + ': ' + formatDateTime(intervals[i].start),
+                (intervals[i].isGap ? '⚡' : '🕯️') + ': ' + formatDateTime(intervals[i].stop)
+            ];
+            datasets.push({
+              label: label,
+              data: [intervals[i].duration * 1000],
+              backgroundColor: intervals[i].isGap ? '#ff7777' : '#ccffcc',
+              categoryPercentage: 1,
+              barPercentage: 1,
+            });
           }
           dataset.push({x: convertDateTimeToKyivTZ(new Date()), y: 0});
-
 
 
           console.log(intervals, dataset);
@@ -160,25 +201,30 @@
           document.getElementById("status").style.background = isOnline ? 'green' : 'red';
           document.getElementById("status").style.color = 'white';
 
+          console.log(datasets);
           chart = new Chart(ctx, {
-            // type: 'line',
             type: 'bar',
             data: {
-              //labels: ['Light status', 'Time period'],
-              datasets: [{
-                label: 'Проверка электричества пройдена',
-                data: dataset,
-                // barThickness: 'flex',
-                barThickness: thickness,
-                backgroundColor: bgColor,
-                maxBarThickness: 100000,
-                // borderWidth: 0,
-                categoryPercentage: 1,
-                barPercentage: 1.0,
-              }]
+              datasets: datasets,
+              labels: ['']
             },
             maintainAspectRatio: false,
             options: {
+              indexAxis: 'y',
+              responsive: true,
+              plugins: {
+                legend: {
+                  display: false
+                },
+                tooltip: {
+                  displayColors: false,
+                  callbacks: {
+                    label: function (tooltipItem, data) {
+                      return chart.data.datasets[tooltipItem.datasetIndex].label;
+                    }
+                  }
+                },
+              },
               scales: {
                 y: {
                   display: false,
@@ -186,9 +232,9 @@
                   grid: {
                     drawBorder: false,
                   },
+                  stacked: true,
                 },
                 x: {
-                  stacked: true,
                   type: 'time',
                   time: {
                     unit: 'minute',
@@ -198,6 +244,7 @@
                   },
                   min: intervals[0].start,
                   max: new Date(),
+                  stacked: true,
                 },
               }
             }
