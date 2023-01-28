@@ -1,0 +1,213 @@
+<html>
+<head>
+<!--  <meta http-equiv="refresh" content="30">-->
+</head>
+<body>
+<h2 style="font-family:sans-serif"><i>ЭлектроАнтон-4600</i></h2>
+<p>Статус: <span id="status"></span></p>
+
+<button onClick="gotourl(200)">6 часов</button>
+<button onClick="gotourl(800)">18 часов</button>
+<button onClick="gotourl(1600)">1 день</button>
+<button onClick="gotourl(3000)">2 дня</button>
+<button onClick="gotourl(9000)">неделя</button>
+<div>
+  <canvas id="myChart" height="50"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
+<script>
+
+  function gotourl(datasize){
+    window.location.href = '?datasize=' + datasize;
+  }
+
+  function httpGetAsync(theUrl, callback) {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function () {
+      if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+        callback(xmlHttp.responseText);
+      }
+    }
+    xmlHttp.open("GET", theUrl, true);
+    xmlHttp.send(null);
+  }
+
+  function getSearchParameters() {
+    var prmstr = window.location.search.substr(1);
+    return prmstr != null && prmstr != "" ? transformToAssocArray(prmstr) : {};
+  }
+
+  function transformToAssocArray( prmstr ) {
+    let params = {};
+    let prmarr = prmstr.split("&");
+    for (let i = 0; i < prmarr.length; i++) {
+      let tmparr = prmarr[i].split("=");
+      params[tmparr[0]] = tmparr[1];
+    }
+    return params;
+  }
+
+  let params = getSearchParameters();
+
+  let datasize = params.datasize ?? 200;
+
+  function convertTZ(date, tzString) {
+    return new Date((typeof date === "string" ? new Date(date) : date).toLocaleString("en-US", {timeZone: tzString}));
+  }
+
+  const ctx = document.getElementById('myChart');
+  var chart = new Chart(ctx, {
+    type: 'bar',
+    data: {datasets: [{data: []}]},
+  });
+
+  function convertDateTimeToKyivTZ(datetime) {
+    let d = new Date(Date.parse(datetime) + 60 * 60 * 2); // +2 hours
+    return d.getFullYear() + '-' + ("00" + (d.getMonth() + 1)).slice(-2) + '-' + ("00" + d.getDate()).slice(-2) + ' ' + ("00" + d.getHours()).slice(-2) + ':' + ("00" + d.getMinutes()).slice(-2) + ':' + ("00" + d.getSeconds()).slice(-2);
+  }
+
+
+  function loadChart(dataSize) {
+
+    chart.destroy();
+
+    httpGetAsync('https://api.thingspeak.com/channels/2013961/fields/1.json?results=' + dataSize,
+        function (data) {
+          let channels = JSON.parse(data);
+          // channels = JSON.parse('{"channel":{"id":2013961,"name":"Test","description":"test","latitude":"0.0","longitude":"0.0","field1":"a","created_at":"2023-01-22T16:08:11Z","updated_at":"2023-01-27T22:39:22Z","last_entry_id":1470},"feeds":[{"created_at":"2023-01-28T04:02:53Z","entry_id":1271,"field1":"2"},{"created_at":"2023-01-28T04:04:53Z","entry_id":1272,"field1":"2"},{"created_at":"2023-01-28T04:06:53Z","entry_id":1273,"field1":"2"},{"created_at":"2023-01-28T04:08:53Z","entry_id":1274,"field1":"2"},{"created_at":"2023-01-28T04:10:53Z","entry_id":1275,"field1":"2"},{"created_at":"2023-01-28T04:12:53Z","entry_id":1276,"field1":"2"},{"created_at":"2023-01-28T04:14:53Z","entry_id":1277,"field1":"2"},{"created_at":"2023-01-28T04:16:53Z","entry_id":1278,"field1":"2"},{"created_at":"2023-01-28T04:18:53Z","entry_id":1279,"field1":"2"},{"created_at":"2023-01-28T04:20:53Z","entry_id":1280,"field1":"2"},{"created_at":"2023-01-28T04:22:53Z","entry_id":1281,"field1":"2"},{"created_at":"2023-01-28T04:24:53Z","entry_id":1282,"field1":"2"},{"created_at":"2023-01-28T04:26:53Z","entry_id":1283,"field1":"2"},{"created_at":"2023-01-28T04:28:53Z","entry_id":1284,"field1":"2"},{"created_at":"2023-01-28T04:30:53Z","entry_id":1285,"field1":"2"},{"created_at":"2023-01-28T04:32:53Z","entry_id":1286,"field1":"2"},{"created_at":"2023-01-28T04:34:53Z","entry_id":1287,"field1":"2"},{"created_at":"2023-01-28T04:36:53Z","entry_id":1288,"field1":"2"},{"created_at":"2023-01-28T04:38:53Z","entry_id":1289,"field1":"2"},{"created_at":"2023-01-28T04:40:53Z","entry_id":1290,"field1":"2"},{"created_at":"2023-01-28T04:42:53Z","entry_id":1291,"field1":"2"},{"created_at":"2023-01-28T04:44:53Z","entry_id":1292,"field1":"2"},{"created_at":"2023-01-28T04:46:53Z","entry_id":1293,"field1":"2"},{"created_at":"2023-01-28T04:48:53Z","entry_id":1294,"field1":"2"},{"created_at":"2023-01-28T04:50:53Z","entry_id":1295,"field1":"2"},{"created_at":"2023-01-28T04:52:53Z","entry_id":1296,"field1":"2"},{"created_at":"2023-01-28T04:54:53Z","entry_id":1297,"field1":"2"},{"created_at":"2023-01-28T04:56:53Z","entry_id":1298,"field1":"2"},{"created_at":"2023-01-28T04:58:53Z","entry_id":1299,"field1":"2"},{"created_at":"2023-01-28T05:00:53Z","entry_id":1300,"field1":"2"},{"created_at":"2023-01-28T05:02:53Z","entry_id":1301,"field1":"2"},{"created_at":"2023-01-28T05:04:53Z","entry_id":1302,"field1":"2"},{"created_at":"2023-01-28T05:06:53Z","entry_id":1303,"field1":"2"},{"created_at":"2023-01-28T05:08:53Z","entry_id":1304,"field1":"2"},{"created_at":"2023-01-28T05:10:53Z","entry_id":1305,"field1":"2"},{"created_at":"2023-01-28T05:12:53Z","entry_id":1306,"field1":"2"},{"created_at":"2023-01-28T05:14:53Z","entry_id":1307,"field1":"2"},{"created_at":"2023-01-28T05:16:53Z","entry_id":1308,"field1":"2"},{"created_at":"2023-01-28T05:18:53Z","entry_id":1309,"field1":"2"},{"created_at":"2023-01-28T05:20:53Z","entry_id":1310,"field1":"2"},{"created_at":"2023-01-28T05:22:53Z","entry_id":1311,"field1":"2"},{"created_at":"2023-01-28T05:24:53Z","entry_id":1312,"field1":"2"},{"created_at":"2023-01-28T05:26:53Z","entry_id":1313,"field1":"2"},{"created_at":"2023-01-28T05:28:53Z","entry_id":1314,"field1":"2"},{"created_at":"2023-01-28T05:30:53Z","entry_id":1315,"field1":"2"},{"created_at":"2023-01-28T05:32:53Z","entry_id":1316,"field1":"2"},{"created_at":"2023-01-28T05:34:53Z","entry_id":1317,"field1":"2"},{"created_at":"2023-01-28T05:36:53Z","entry_id":1318,"field1":"2"},{"created_at":"2023-01-28T05:38:53Z","entry_id":1319,"field1":"2"},{"created_at":"2023-01-28T05:40:53Z","entry_id":1320,"field1":"2"},{"created_at":"2023-01-28T05:42:53Z","entry_id":1321,"field1":"2"},{"created_at":"2023-01-28T05:44:53Z","entry_id":1322,"field1":"2"},{"created_at":"2023-01-28T05:46:53Z","entry_id":1323,"field1":"2"},{"created_at":"2023-01-28T05:48:53Z","entry_id":1324,"field1":"2"},{"created_at":"2023-01-28T05:50:53Z","entry_id":1325,"field1":"2"},{"created_at":"2023-01-28T05:52:53Z","entry_id":1326,"field1":"2"},{"created_at":"2023-01-28T05:54:53Z","entry_id":1327,"field1":"2"},{"created_at":"2023-01-28T05:56:53Z","entry_id":1328,"field1":"2"},{"created_at":"2023-01-28T05:58:53Z","entry_id":1329,"field1":"2"},{"created_at":"2023-01-28T06:00:53Z","entry_id":1330,"field1":"2"},{"created_at":"2023-01-28T06:02:53Z","entry_id":1331,"field1":"2"},{"created_at":"2023-01-28T06:04:53Z","entry_id":1332,"field1":"2"},{"created_at":"2023-01-28T06:06:53Z","entry_id":1333,"field1":"2"},{"created_at":"2023-01-28T06:08:53Z","entry_id":1334,"field1":"2"},{"created_at":"2023-01-28T06:10:53Z","entry_id":1335,"field1":"2"},{"created_at":"2023-01-28T06:12:53Z","entry_id":1336,"field1":"2"},{"created_at":"2023-01-28T06:14:53Z","entry_id":1337,"field1":"2"},{"created_at":"2023-01-28T06:16:53Z","entry_id":1338,"field1":"2"},{"created_at":"2023-01-28T06:18:53Z","entry_id":1339,"field1":"2"},{"created_at":"2023-01-28T06:20:53Z","entry_id":1340,"field1":"2"},{"created_at":"2023-01-28T06:22:53Z","entry_id":1341,"field1":"2"},{"created_at":"2023-01-28T06:24:53Z","entry_id":1342,"field1":"2"},{"created_at":"2023-01-28T06:26:53Z","entry_id":1343,"field1":"2"},{"created_at":"2023-01-28T06:28:53Z","entry_id":1344,"field1":"2"},{"created_at":"2023-01-28T06:30:53Z","entry_id":1345,"field1":"2"},{"created_at":"2023-01-28T06:32:53Z","entry_id":1346,"field1":"2"},{"created_at":"2023-01-28T06:34:53Z","entry_id":1347,"field1":"2"},{"created_at":"2023-01-28T06:36:53Z","entry_id":1348,"field1":"2"},{"created_at":"2023-01-28T06:38:53Z","entry_id":1349,"field1":"2"},{"created_at":"2023-01-28T06:40:53Z","entry_id":1350,"field1":"2"},{"created_at":"2023-01-28T06:42:53Z","entry_id":1351,"field1":"2"},{"created_at":"2023-01-28T06:44:53Z","entry_id":1352,"field1":"2"},{"created_at":"2023-01-28T06:46:53Z","entry_id":1353,"field1":"2"},{"created_at":"2023-01-28T06:48:53Z","entry_id":1354,"field1":"2"},{"created_at":"2023-01-28T06:50:53Z","entry_id":1355,"field1":"2"},{"created_at":"2023-01-28T06:52:53Z","entry_id":1356,"field1":"2"},{"created_at":"2023-01-28T06:54:53Z","entry_id":1357,"field1":"2"},{"created_at":"2023-01-28T06:56:53Z","entry_id":1358,"field1":"2"},{"created_at":"2023-01-28T06:58:53Z","entry_id":1359,"field1":"2"},{"created_at":"2023-01-28T07:00:53Z","entry_id":1360,"field1":"2"},{"created_at":"2023-01-28T07:02:53Z","entry_id":1361,"field1":"2"},{"created_at":"2023-01-28T07:04:53Z","entry_id":1362,"field1":"2"},{"created_at":"2023-01-28T07:06:53Z","entry_id":1363,"field1":"2"},{"created_at":"2023-01-28T07:08:53Z","entry_id":1364,"field1":"2"},{"created_at":"2023-01-28T07:10:53Z","entry_id":1365,"field1":"2"},{"created_at":"2023-01-28T07:12:53Z","entry_id":1366,"field1":"2"},{"created_at":"2023-01-28T07:14:53Z","entry_id":1367,"field1":"2"},{"created_at":"2023-01-28T07:16:53Z","entry_id":1368,"field1":"2"},{"created_at":"2023-01-28T07:18:53Z","entry_id":1369,"field1":"2"},{"created_at":"2023-01-28T07:20:53Z","entry_id":1370,"field1":"2"},{"created_at":"2023-01-28T07:22:53Z","entry_id":1371,"field1":"2"},{"created_at":"2023-01-28T07:24:53Z","entry_id":1372,"field1":"2"},{"created_at":"2023-01-28T07:26:53Z","entry_id":1373,"field1":"2"},{"created_at":"2023-01-28T07:28:53Z","entry_id":1374,"field1":"2"},{"created_at":"2023-01-28T07:30:53Z","entry_id":1375,"field1":"2"},{"created_at":"2023-01-28T07:32:53Z","entry_id":1376,"field1":"2"},{"created_at":"2023-01-28T07:34:53Z","entry_id":1377,"field1":"2"},{"created_at":"2023-01-28T07:36:53Z","entry_id":1378,"field1":"2"},{"created_at":"2023-01-28T07:38:53Z","entry_id":1379,"field1":"2"},{"created_at":"2023-01-28T07:40:53Z","entry_id":1380,"field1":"2"},{"created_at":"2023-01-28T07:42:53Z","entry_id":1381,"field1":"2"},{"created_at":"2023-01-28T07:44:53Z","entry_id":1382,"field1":"2"},{"created_at":"2023-01-28T07:46:53Z","entry_id":1383,"field1":"2"},{"created_at":"2023-01-28T07:48:53Z","entry_id":1384,"field1":"2"},{"created_at":"2023-01-28T07:50:53Z","entry_id":1385,"field1":"2"},{"created_at":"2023-01-28T07:52:53Z","entry_id":1386,"field1":"2"},{"created_at":"2023-01-28T07:54:53Z","entry_id":1387,"field1":"2"},{"created_at":"2023-01-28T07:56:53Z","entry_id":1388,"field1":"2"},{"created_at":"2023-01-28T07:58:53Z","entry_id":1389,"field1":"2"},{"created_at":"2023-01-28T08:00:53Z","entry_id":1390,"field1":"2"},{"created_at":"2023-01-28T08:02:53Z","entry_id":1391,"field1":"2"},{"created_at":"2023-01-28T08:04:53Z","entry_id":1392,"field1":"2"},{"created_at":"2023-01-28T08:06:53Z","entry_id":1393,"field1":"2"},{"created_at":"2023-01-28T08:08:53Z","entry_id":1394,"field1":"2"},{"created_at":"2023-01-28T08:10:53Z","entry_id":1395,"field1":"2"},{"created_at":"2023-01-28T08:12:53Z","entry_id":1396,"field1":"2"},{"created_at":"2023-01-28T08:14:53Z","entry_id":1397,"field1":"2"},{"created_at":"2023-01-28T08:16:53Z","entry_id":1398,"field1":"2"},{"created_at":"2023-01-28T08:18:53Z","entry_id":1399,"field1":"2"},{"created_at":"2023-01-28T08:20:53Z","entry_id":1400,"field1":"2"},{"created_at":"2023-01-28T08:22:53Z","entry_id":1401,"field1":"2"},{"created_at":"2023-01-28T08:24:53Z","entry_id":1402,"field1":"2"},{"created_at":"2023-01-28T08:26:53Z","entry_id":1403,"field1":"2"},{"created_at":"2023-01-28T08:28:53Z","entry_id":1404,"field1":"2"},{"created_at":"2023-01-28T08:30:53Z","entry_id":1405,"field1":"2"},{"created_at":"2023-01-28T08:32:53Z","entry_id":1406,"field1":"2"},{"created_at":"2023-01-28T08:34:53Z","entry_id":1407,"field1":"2"},{"created_at":"2023-01-28T08:36:53Z","entry_id":1408,"field1":"2"},{"created_at":"2023-01-28T08:38:53Z","entry_id":1409,"field1":"2"},{"created_at":"2023-01-28T08:40:53Z","entry_id":1410,"field1":"2"},{"created_at":"2023-01-28T08:42:53Z","entry_id":1411,"field1":"2"},{"created_at":"2023-01-28T08:44:53Z","entry_id":1412,"field1":"2"},{"created_at":"2023-01-28T08:46:53Z","entry_id":1413,"field1":"2"},{"created_at":"2023-01-28T08:48:53Z","entry_id":1414,"field1":"2"},{"created_at":"2023-01-28T08:50:53Z","entry_id":1415,"field1":"2"},{"created_at":"2023-01-28T08:52:53Z","entry_id":1416,"field1":"2"},{"created_at":"2023-01-28T08:54:53Z","entry_id":1417,"field1":"2"},{"created_at":"2023-01-28T08:56:53Z","entry_id":1418,"field1":"2"},{"created_at":"2023-01-28T08:58:53Z","entry_id":1419,"field1":"2"},{"created_at":"2023-01-28T09:00:53Z","entry_id":1420,"field1":"2"},{"created_at":"2023-01-28T10:12:22Z","entry_id":1421,"field1":"2"},{"created_at":"2023-01-28T10:14:22Z","entry_id":1422,"field1":"2"},{"created_at":"2023-01-28T10:16:22Z","entry_id":1423,"field1":"2"},{"created_at":"2023-01-28T10:18:22Z","entry_id":1424,"field1":"2"},{"created_at":"2023-01-28T10:20:22Z","entry_id":1425,"field1":"2"},{"created_at":"2023-01-28T10:22:22Z","entry_id":1426,"field1":"2"},{"created_at":"2023-01-28T10:24:22Z","entry_id":1427,"field1":"2"},{"created_at":"2023-01-28T10:26:22Z","entry_id":1428,"field1":"2"},{"created_at":"2023-01-28T10:58:32Z","entry_id":1429,"field1":"2"},{"created_at":"2023-01-28T11:00:32Z","entry_id":1430,"field1":"2"},{"created_at":"2023-01-28T11:02:32Z","entry_id":1431,"field1":"2"},{"created_at":"2023-01-28T11:04:32Z","entry_id":1432,"field1":"2"},{"created_at":"2023-01-28T11:06:32Z","entry_id":1433,"field1":"2"},{"created_at":"2023-01-28T11:08:32Z","entry_id":1434,"field1":"2"},{"created_at":"2023-01-28T11:10:32Z","entry_id":1435,"field1":"2"},{"created_at":"2023-01-28T11:12:32Z","entry_id":1436,"field1":"2"},{"created_at":"2023-01-28T11:14:32Z","entry_id":1437,"field1":"2"},{"created_at":"2023-01-28T11:16:32Z","entry_id":1438,"field1":"2"},{"created_at":"2023-01-28T11:18:32Z","entry_id":1439,"field1":"2"},{"created_at":"2023-01-28T11:20:32Z","entry_id":1440,"field1":"2"},{"created_at":"2023-01-28T11:22:32Z","entry_id":1441,"field1":"2"},{"created_at":"2023-01-28T11:24:32Z","entry_id":1442,"field1":"2"},{"created_at":"2023-01-28T11:26:32Z","entry_id":1443,"field1":"2"},{"created_at":"2023-01-28T11:28:32Z","entry_id":1444,"field1":"2"},{"created_at":"2023-01-28T11:30:32Z","entry_id":1445,"field1":"2"},{"created_at":"2023-01-28T11:32:32Z","entry_id":1446,"field1":"2"},{"created_at":"2023-01-28T11:34:32Z","entry_id":1447,"field1":"2"},{"created_at":"2023-01-28T11:36:32Z","entry_id":1448,"field1":"2"},{"created_at":"2023-01-28T11:38:32Z","entry_id":1449,"field1":"2"},{"created_at":"2023-01-28T11:40:32Z","entry_id":1450,"field1":"2"},{"created_at":"2023-01-28T11:42:31Z","entry_id":1451,"field1":"2"},{"created_at":"2023-01-28T11:44:31Z","entry_id":1452,"field1":"2"},{"created_at":"2023-01-28T11:46:32Z","entry_id":1453,"field1":"2"},{"created_at":"2023-01-28T11:48:32Z","entry_id":1454,"field1":"2"},{"created_at":"2023-01-28T11:50:31Z","entry_id":1455,"field1":"2"},{"created_at":"2023-01-28T11:52:32Z","entry_id":1456,"field1":"2"},{"created_at":"2023-01-28T11:54:32Z","entry_id":1457,"field1":"2"},{"created_at":"2023-01-28T11:56:32Z","entry_id":1458,"field1":"2"},{"created_at":"2023-01-28T11:58:31Z","entry_id":1459,"field1":"2"},{"created_at":"2023-01-28T12:00:31Z","entry_id":1460,"field1":"2"},{"created_at":"2023-01-28T12:02:32Z","entry_id":1461,"field1":"2"},{"created_at":"2023-01-28T12:04:31Z","entry_id":1462,"field1":"2"},{"created_at":"2023-01-28T12:06:32Z","entry_id":1463,"field1":"2"},{"created_at":"2023-01-28T12:08:32Z","entry_id":1464,"field1":"2"},{"created_at":"2023-01-28T12:10:31Z","entry_id":1465,"field1":"2"},{"created_at":"2023-01-28T12:12:31Z","entry_id":1466,"field1":"2"},{"created_at":"2023-01-28T12:14:31Z","entry_id":1467,"field1":"2"},{"created_at":"2023-01-28T12:16:31Z","entry_id":1468,"field1":"2"},{"created_at":"2023-01-28T12:18:31Z","entry_id":1469,"field1":"2"},{"created_at":"2023-01-28T12:20:32Z","entry_id":1470,"field1":"2"}]}');
+          let bgColor = [];
+          let thickness = [];
+          // let channels = JSON.parse('{"channel":{"id":2013961,"name":"Test","description":"test","latitude":"0.0","longitude":"0.0","field1":"a","field2":"b","created_at":"2023-01-22T16:08:11Z","updated_at":"2023-01-22T16:08:11Z","last_entry_id":1192},"feeds":[{"created_at":"2023-01-23T19:36:46Z","entry_id":1113,"field1":"8"},{"created_at":"2023-01-23T19:38:46Z","entry_id":1114,"field1":"8"},{"created_at":"2023-01-23T19:40:46Z","entry_id":1115,"field1":"8"},{"created_at":"2023-01-23T19:42:46Z","entry_id":1116,"field1":"8"},{"created_at":"2023-01-23T19:44:46Z","entry_id":1117,"field1":"8"},{"created_at":"2023-01-23T19:46:46Z","entry_id":1118,"field1":"8"},{"created_at":"2023-01-23T19:48:46Z","entry_id":1119,"field1":"8"},{"created_at":"2023-01-23T19:50:46Z","entry_id":1120,"field1":"8"},{"created_at":"2023-01-23T19:52:46Z","entry_id":1121,"field1":"8"},{"created_at":"2023-01-23T19:54:46Z","entry_id":1122,"field1":"8"},{"created_at":"2023-01-23T20:14:46Z","entry_id":1132,"field1":"8"},{"created_at":"2023-01-23T20:16:46Z","entry_id":1133,"field1":"8"},{"created_at":"2023-01-23T20:18:46Z","entry_id":1134,"field1":"8"},{"created_at":"2023-01-23T20:20:46Z","entry_id":1135,"field1":"8"},{"created_at":"2023-01-23T20:22:46Z","entry_id":1136,"field1":"8"},{"created_at":"2023-01-23T20:24:46Z","entry_id":1137,"field1":"8"},{"created_at":"2023-01-23T20:26:46Z","entry_id":1138,"field1":"8"},{"created_at":"2023-01-23T20:28:46Z","entry_id":1139,"field1":"8"},{"created_at":"2023-01-23T20:30:46Z","entry_id":1140,"field1":"8"},{"created_at":"2023-01-23T20:32:46Z","entry_id":1141,"field1":"8"},{"created_at":"2023-01-23T20:34:46Z","entry_id":1142,"field1":"8"},{"created_at":"2023-01-23T20:52:46Z","entry_id":1151,"field1":"8"},{"created_at":"2023-01-23T20:54:46Z","entry_id":1152,"field1":"8"},{"created_at":"2023-01-23T20:56:46Z","entry_id":1153,"field1":"8"},{"created_at":"2023-01-23T20:58:46Z","entry_id":1154,"field1":"8"},{"created_at":"2023-01-23T21:00:46Z","entry_id":1155,"field1":"8"},{"created_at":"2023-01-23T21:02:46Z","entry_id":1156,"field1":"8"},{"created_at":"2023-01-23T21:04:46Z","entry_id":1157,"field1":"8"},{"created_at":"2023-01-23T21:06:46Z","entry_id":1158,"field1":"8"},{"created_at":"2023-01-23T21:08:46Z","entry_id":1159,"field1":"8"},{"created_at":"2023-01-23T21:10:46Z","entry_id":1160,"field1":"8"},{"created_at":"2023-01-23T21:12:46Z","entry_id":1161,"field1":"8"},{"created_at":"2023-01-23T21:14:46Z","entry_id":1162,"field1":"8"},{"created_at":"2023-01-23T21:16:46Z","entry_id":1163,"field1":"8"},{"created_at":"2023-01-23T21:18:46Z","entry_id":1164,"field1":"8"},{"created_at":"2023-01-23T21:20:46Z","entry_id":1165,"field1":"8"},{"created_at":"2023-01-23T21:22:46Z","entry_id":1166,"field1":"8"},{"created_at":"2023-01-23T21:24:46Z","entry_id":1167,"field1":"8"},{"created_at":"2023-01-23T21:26:46Z","entry_id":1168,"field1":"8"},{"created_at":"2023-01-23T21:28:46Z","entry_id":1169,"field1":"8"},{"created_at":"2023-01-23T21:30:46Z","entry_id":1170,"field1":"8"},{"created_at":"2023-01-23T21:32:46Z","entry_id":1171,"field1":"8"},{"created_at":"2023-01-23T21:34:46Z","entry_id":1172,"field1":"8"},{"created_at":"2023-01-23T21:36:46Z","entry_id":1173,"field1":"8"},{"created_at":"2023-01-23T21:38:46Z","entry_id":1174,"field1":"8"},{"created_at":"2023-01-23T21:40:46Z","entry_id":1175,"field1":"8"},{"created_at":"2023-01-23T21:42:46Z","entry_id":1176,"field1":"8"},{"created_at":"2023-01-23T21:44:46Z","entry_id":1177,"field1":"8"},{"created_at":"2023-01-23T21:46:46Z","entry_id":1178,"field1":"8"},{"created_at":"2023-01-23T21:48:46Z","entry_id":1179,"field1":"8"},{"created_at":"2023-01-23T21:50:46Z","entry_id":1180,"field1":"8"},{"created_at":"2023-01-23T21:52:46Z","entry_id":1181,"field1":"8"},{"created_at":"2023-01-23T21:54:08Z","entry_id":1182,"field1":"8"},{"created_at":"2023-01-23T21:54:28Z","entry_id":1183,"field1":"8"}]}');
+          console.log(channels);
+
+          let datetimes = channels.feeds;
+          let newArray = channels.feeds;
+          let intervals = [];
+          let currentInterval = {start: datetimes[0].created_at};
+
+          console.log(newArray);
+
+          for (let i = 1; i < datetimes.length; i++) {
+            let currentDatetime = new Date(datetimes[i].created_at);
+            let previousDatetime = new Date(datetimes[i - 1].created_at);
+            let diff = currentDatetime - previousDatetime;
+
+            if (diff / 1000 <= 150) {
+              // if the difference between current and previous datetime is less than 2 minutes,
+              // continue the current interval
+              continue;
+            } else {
+              // if the difference is greater than 2 minutes,
+              // close the current interval
+              currentInterval.stop = datetimes[i - 1].created_at;
+              currentInterval.duration = (new Date(currentInterval.stop) - new Date(currentInterval.start)) / 1000;
+              currentInterval.isGap = false;
+              intervals.push(currentInterval);
+
+              // save gap interval
+              let gapInterval = {
+                start: datetimes[i - 1].created_at,
+                stop: datetimes[i].created_at,
+                duration: (currentDatetime - previousDatetime) / 1000,
+                isGap: true
+              };
+
+              intervals.push(gapInterval);
+
+              // and start a new one
+              currentInterval = {start: datetimes[i].created_at};
+            }
+          }
+
+          // handle the last interval
+          currentInterval.stop = datetimes[datetimes.length - 1].created_at;
+          currentInterval.duration = (new Date(currentInterval.stop) - new Date(currentInterval.start)) / 1000;
+          currentInterval.isGap = false;
+          intervals.push(currentInterval);
+
+          let lastDuration = (new Date() - new Date(currentInterval.stop)) / 1000;
+          if (lastDuration > 150) {
+            console.log('PUSH');
+            intervals.push({
+              start: currentInterval.stop,
+              stop: new Date(),
+              duration: lastDuration,
+              isGap: true
+            });
+          }
+
+          let dataset = [];
+          for (let i = 0; i < intervals.length; i++) {
+            intervals[i].start = convertDateTimeToKyivTZ(intervals[i].start);
+            intervals[i].stop = convertDateTimeToKyivTZ(intervals[i].stop);
+
+            bgColor[i] = intervals[i].isGap ? '#ff7777' : '#ccffcc';
+            // thickness[i] = intervals[i].duration / 60;
+            dataset.push({x: intervals[i].start, y: 2});
+          }
+          dataset.push({x: convertDateTimeToKyivTZ(new Date()), y: 0});
+
+
+
+          console.log(intervals, dataset);
+
+          let isOnline = !intervals[intervals.length - 1].isGap;
+
+          document.getElementById("status").innerHTML = isOnline ? 'Свет есть' : 'Нет света';
+          document.getElementById("status").style.background = isOnline ? 'green' : 'red';
+          document.getElementById("status").style.color = 'white';
+
+          chart = new Chart(ctx, {
+            // type: 'line',
+            type: 'bar',
+            data: {
+              //labels: ['Light status', 'Time period'],
+              datasets: [{
+                label: 'Проверка электричества пройдена',
+                data: dataset,
+                // barThickness: 'flex',
+                barThickness: thickness,
+                backgroundColor: bgColor,
+                maxBarThickness: 100000,
+                // borderWidth: 0,
+                categoryPercentage: 1,
+                barPercentage: 1.0,
+              }]
+            },
+            maintainAspectRatio: false,
+            options: {
+              scales: {
+                y: {
+                  display: false,
+                  beginAtZero: true,
+                  grid: {
+                    drawBorder: false,
+                  },
+                },
+                x: {
+                  stacked: true,
+                  type: 'time',
+                  time: {
+                    unit: 'minute',
+                    displayFormats: {
+                      minute: "HH:mm, dd MMM"
+                    }
+                  },
+                  min: intervals[0].start,
+                  max: new Date(),
+                },
+              }
+            }
+          });
+        }
+    );
+  }
+
+  loadChart(datasize);
+
+</script>
+</body>
+</html>
