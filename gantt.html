@@ -82,8 +82,6 @@ white-space: nowrap;user-select: none;-webkit-user-select: none;touch-action: ma
 
   let datasize = params.datasize ?? 200;
   let botid = params.botId ?? 2013961;
-  console.log('sdfdsfs');
-  console.log(botid, datasize);
 
   document.getElementById('botid').value = botid;
 
@@ -182,11 +180,8 @@ white-space: nowrap;user-select: none;-webkit-user-select: none;touch-action: ma
           // let channels = JSON.parse('{"channel":{"id":2013961,"name":"Test","description":"test","latitude":"0.0","longitude":"0.0","field1":"a","field2":"b","created_at":"2023-01-22T16:08:11Z","updated_at":"2023-01-22T16:08:11Z","last_entry_id":1192},"feeds":[{"created_at":"2023-01-23T19:36:46Z","entry_id":1113,"field1":"8"},{"created_at":"2023-01-23T19:38:46Z","entry_id":1114,"field1":"8"},{"created_at":"2023-01-23T19:40:46Z","entry_id":1115,"field1":"8"},{"created_at":"2023-01-23T19:42:46Z","entry_id":1116,"field1":"8"},{"created_at":"2023-01-23T19:44:46Z","entry_id":1117,"field1":"8"},{"created_at":"2023-01-23T19:46:46Z","entry_id":1118,"field1":"8"},{"created_at":"2023-01-23T19:48:46Z","entry_id":1119,"field1":"8"},{"created_at":"2023-01-23T19:50:46Z","entry_id":1120,"field1":"8"},{"created_at":"2023-01-23T19:52:46Z","entry_id":1121,"field1":"8"},{"created_at":"2023-01-23T19:54:46Z","entry_id":1122,"field1":"8"},{"created_at":"2023-01-23T20:14:46Z","entry_id":1132,"field1":"8"},{"created_at":"2023-01-23T20:16:46Z","entry_id":1133,"field1":"8"},{"created_at":"2023-01-23T20:18:46Z","entry_id":1134,"field1":"8"},{"created_at":"2023-01-23T20:20:46Z","entry_id":1135,"field1":"8"},{"created_at":"2023-01-23T20:22:46Z","entry_id":1136,"field1":"8"},{"created_at":"2023-01-23T20:24:46Z","entry_id":1137,"field1":"8"},{"created_at":"2023-01-23T20:26:46Z","entry_id":1138,"field1":"8"},{"created_at":"2023-01-23T20:28:46Z","entry_id":1139,"field1":"8"},{"created_at":"2023-01-23T20:30:46Z","entry_id":1140,"field1":"8"},{"created_at":"2023-01-23T20:32:46Z","entry_id":1141,"field1":"8"},{"created_at":"2023-01-23T20:34:46Z","entry_id":1142,"field1":"8"},{"created_at":"2023-01-23T20:52:46Z","entry_id":1151,"field1":"8"},{"created_at":"2023-01-23T20:54:46Z","entry_id":1152,"field1":"8"},{"created_at":"2023-01-23T20:56:46Z","entry_id":1153,"field1":"8"},{"created_at":"2023-01-23T20:58:46Z","entry_id":1154,"field1":"8"},{"created_at":"2023-01-23T21:00:46Z","entry_id":1155,"field1":"8"},{"created_at":"2023-01-23T21:02:46Z","entry_id":1156,"field1":"8"},{"created_at":"2023-01-23T21:04:46Z","entry_id":1157,"field1":"8"},{"created_at":"2023-01-23T21:06:46Z","entry_id":1158,"field1":"8"},{"created_at":"2023-01-23T21:08:46Z","entry_id":1159,"field1":"8"},{"created_at":"2023-01-23T21:10:46Z","entry_id":1160,"field1":"8"},{"created_at":"2023-01-23T21:12:46Z","entry_id":1161,"field1":"8"},{"created_at":"2023-01-23T21:14:46Z","entry_id":1162,"field1":"8"},{"created_at":"2023-01-23T21:16:46Z","entry_id":1163,"field1":"8"},{"created_at":"2023-01-23T21:18:46Z","entry_id":1164,"field1":"8"},{"created_at":"2023-01-23T21:20:46Z","entry_id":1165,"field1":"8"},{"created_at":"2023-01-23T21:22:46Z","entry_id":1166,"field1":"8"},{"created_at":"2023-01-23T21:24:46Z","entry_id":1167,"field1":"8"},{"created_at":"2023-01-23T21:26:46Z","entry_id":1168,"field1":"8"},{"created_at":"2023-01-23T21:28:46Z","entry_id":1169,"field1":"8"},{"created_at":"2023-01-23T21:30:46Z","entry_id":1170,"field1":"8"},{"created_at":"2023-01-23T21:32:46Z","entry_id":1171,"field1":"8"},{"created_at":"2023-01-23T21:34:46Z","entry_id":1172,"field1":"8"},{"created_at":"2023-01-23T21:36:46Z","entry_id":1173,"field1":"8"},{"created_at":"2023-01-23T21:38:46Z","entry_id":1174,"field1":"8"},{"created_at":"2023-01-23T21:40:46Z","entry_id":1175,"field1":"8"},{"created_at":"2023-01-23T21:42:46Z","entry_id":1176,"field1":"8"},{"created_at":"2023-01-23T21:44:46Z","entry_id":1177,"field1":"8"},{"created_at":"2023-01-23T21:46:46Z","entry_id":1178,"field1":"8"},{"created_at":"2023-01-23T21:48:46Z","entry_id":1179,"field1":"8"},{"created_at":"2023-01-23T21:50:46Z","entry_id":1180,"field1":"8"},{"created_at":"2023-01-23T21:52:46Z","entry_id":1181,"field1":"8"},{"created_at":"2023-01-23T21:54:08Z","entry_id":1182,"field1":"8"},{"created_at":"2023-01-23T21:54:28Z","entry_id":1183,"field1":"8"}]}');
 
           let datetimes = channels.feeds;
-          let newArray = channels.feeds;
           let intervals = [];
           let currentInterval = {start: datetimes[0].created_at};
-
-          console.log(newArray);
 
           for (let i = 1; i < datetimes.length; i++) {
             let currentDatetime = new Date(datetimes[i].created_at);
@@ -228,7 +223,6 @@ white-space: nowrap;user-select: none;-webkit-user-select: none;touch-action: ma
 
           let lastDuration = (new Date() - new Date(currentInterval.stop)) / 1000;
           if (lastDuration > 200) {
-            console.log('PUSH');
             intervals.push({
               start: currentInterval.stop,
               stop: new Date(),
@@ -268,15 +262,12 @@ white-space: nowrap;user-select: none;-webkit-user-select: none;touch-action: ma
           dataset.push({x: convertDateTimeToKyivTZ(new Date()), y: 0});
 
 
-          console.log(intervals, dataset);
-
           let isOnline = !intervals[intervals.length - 1].isGap;
 
           document.getElementById("status").innerHTML = isOnline ? 'Свет есть' : 'Нет света';
           document.getElementById("status").style.background = isOnline ? 'green' : 'red';
           document.getElementById("status").style.color = 'white';
 
-          console.log(datasets);
           chart = new Chart(ctx, {
             type: 'bar',
             data: {
