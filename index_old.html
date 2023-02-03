@@ -1,0 +1,138 @@
+<html>
+<head>
+    <meta http-equiv="refresh" content="30">
+</head>
+<body>
+<h2 style="font-family:sans-serif"><i>ЭлектроАнтон-4600</i></h2>
+<p>Статус: <span id="status"></span></p>
+
+<button onClick="gotourl(200)">6 часов</button>
+<button onClick="gotourl(800)">18 часов</button>
+<button onClick="gotourl(1600)">1 день</button>
+<button onClick="gotourl(3000)">2 дня</button>
+<button onClick="gotourl(9000)">неделя</button>
+<div>
+    <canvas id="myChart" height="50"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+    function gotourl(datasize){
+        window.location.href = '?datasize=' + datasize;
+    }
+
+    function httpGetAsync(theUrl, callback) {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function () {
+            if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+                callback(xmlHttp.responseText);
+            }
+        }
+        xmlHttp.open("GET", theUrl, true); // true for asynchronous
+        xmlHttp.send(null);
+    }
+
+    function getSearchParameters() {
+        var prmstr = window.location.search.substr(1);
+        return prmstr != null && prmstr != "" ? transformToAssocArray(prmstr) : {};
+    }
+
+    function transformToAssocArray( prmstr ) {
+        let params = {};
+        let prmarr = prmstr.split("&");
+        for (let i = 0; i < prmarr.length; i++) {
+            let tmparr = prmarr[i].split("=");
+            params[tmparr[0]] = tmparr[1];
+        }
+        return params;
+    }
+
+    let params = getSearchParameters();
+
+    let datasize = params.datasize ?? 200;
+
+    function convertTZ(date, tzString) {
+        return new Date((typeof date === "string" ? new Date(date) : date).toLocaleString("en-US", {timeZone: tzString}));
+    }
+
+    const ctx = document.getElementById('myChart');
+    var chart = new Chart(ctx, {
+        type: 'bar',
+        data: {datasets: [{data: []}]},
+    });
+
+    function loadChart(dataSize) {
+
+        chart.destroy();
+
+        httpGetAsync('https://api.thingspeak.com/channels/1968788/feeds.json?results=' + dataSize,
+            function (data) {
+                let channels = JSON.parse(data);
+                console.log(channels);
+                let field1Data = [];
+                //let field2Data = [];
+                let bgColor = [];
+
+                for (let i = 0; i < channels.feeds.length; i++) {
+                    let obj = channels.feeds[i];
+                    let dateUTC = obj.created_at;
+                    let convertedDate = convertTZ(dateUTC, "Europe/Kiev").toLocaleString("en-GB");
+                    field1Data[i] = {x: convertedDate, y: obj.field1 === null ? 0 : obj.field1};
+                    field1Data[i] = {x: convertedDate, y: 2};
+                    if (i > 0 && channels.feeds[i].field1 === null && channels.feeds[i - 1].field1 === null) {
+			bgColor[i] = 'rgba(255, 0, 0, 0.2)';
+                    } else {
+			bgColor[i] = 'rgba(0, 255, 0, 0.2)';
+                    }
+                }
+
+                let isOnline = bgColor[bgColor.length - 1] != 'rgba(255, 0, 0, 0.2)' && bgColor[bgColor.length - 1] != 'rgba(255, 0, 0, 0.2)';
+                
+                document.getElementById("status").innerHTML = isOnline ? 'Свет есть' : 'Нет света';
+                document.getElementById("status").style.background = isOnline ? 'green' : 'red';
+                document.getElementById("status").style.color = 'white';
+
+                chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        //labels: ['Light status', 'Time period'],
+                        datasets: [{
+                            label: 'Проверка электричества пройдена',
+                            data: field1Data,
+                            backgroundColor: bgColor,
+                            borderWidth: 0,
+                            categoryPercentage: 2.0,
+                            barPercentage: 1.0,
+                        }
+                            ,
+                        {
+                            label: 'Проверка электричества не пройдена',
+                            backgroundColor: '#ffcccc',
+                        }]
+                    },
+                    maintainAspectRatio: false,
+                    options: {
+                        scales: {
+                            y: {
+                                display: false,
+                                beginAtZero: true,
+                                grid: {
+                                    drawBorder: false,
+                                    color: 'rgba(255, 0, 0, 0.2)',
+                                },
+                            }
+                        }
+                    }
+                });
+
+            }
+        );
+    }
+
+    loadChart(datasize);
+
+</script>
+</body>
+</html>
