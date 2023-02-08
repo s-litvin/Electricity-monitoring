@@ -89,6 +89,18 @@ white-space: nowrap;user-select: none;-webkit-user-select: none;touch-action: ma
     window.location.href = '?datasize=' + datasize + '&botId=' + document.getElementById('botid').value;
   }
 
+  var toHHMMSS = (secs) => {
+    let sec_num = parseInt(secs, 10)
+    let hours   = Math.floor(sec_num / 3600)
+    let minutes = Math.floor(sec_num / 60) % 60
+    let seconds = sec_num % 60
+
+    return [hours,minutes,seconds]
+            .map(v => v < 10 ? "0" + v : v)
+            .filter((v,i) => v !== "00" || i > 0)
+            .join(":")
+  }
+
   function generateRandomHash() {
     var result = '';
     var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -248,8 +260,10 @@ white-space: nowrap;user-select: none;-webkit-user-select: none;touch-action: ma
             dataset.push({x: intervals[i].start, y: 2});
 
             let label = [
-                (intervals[i].isGap ? '🕯️' : '⚡') + ': ' + formatDateTime(intervals[i].start),
-                (intervals[i].isGap ? '⚡' : '🕯️') + ': ' + formatDateTime(intervals[i].stop),
+                '⌚ : ' + toHHMMSS(intervals[i].duration),
+                ' ',
+                (intervals[i].isGap ? '🪔️' : '💡') + ': ' + formatDateTime(intervals[i].start),
+                (intervals[i].isGap ? '💡' : '🪔') + ': ' + formatDateTime(intervals[i].stop),
             ];
             datasets.push({
               label: label,
