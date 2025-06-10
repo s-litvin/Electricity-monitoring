@@ -58,11 +58,11 @@ white-space: nowrap;user-select: none;-webkit-user-select: none;touch-action: ma
 <div class="row">
   <div class="col-12">
     <p>
-      <button role="button" class="button-2" onClick="gotourl(200)">6 часов</button>
-      <button role="button" class="button-2" onClick="gotourl(800)">18 часов</button>
+      <button role="button" class="button-2" onClick="gotourl(200)">6 годин</button>
+      <button role="button" class="button-2" onClick="gotourl(800)">18 годин</button>
       <button role="button" class="button-2" onClick="gotourl(1600)">1 день</button>
-      <button role="button" class="button-2" onClick="gotourl(3000)">2 дня</button>
-      <button role="button" class="button-2" onClick="gotourl(6000)">5 дней</button>
+      <button role="button" class="button-2" onClick="gotourl(3000)">2 дні</button>
+      <button role="button" class="button-2" onClick="gotourl(6000)">5 днів</button>
     </p>
   </div>
 </div>
@@ -276,7 +276,7 @@ white-space: nowrap;user-select: none;-webkit-user-select: none;touch-action: ma
 
           let isOnline = !intervals[intervals.length - 1].isGap;
 
-          document.getElementById("status").innerHTML = isOnline ? 'Свет есть' : 'Нет света';
+          document.getElementById("status").innerHTML = isOnline ? 'Світло є' : 'Немає світла';
           document.getElementById("status").style.background = isOnline ? 'green' : 'red';
           document.getElementById("status").style.color = 'white';
 
@@ -317,11 +317,9 @@ white-space: nowrap;user-select: none;-webkit-user-select: none;touch-action: ma
                   type: 'time',
                   time: {
                     unit: 'minute',
+                    stepSize: 1,
                     displayFormats: {
-                      minute: "HH:mm",
-                      hour: "HH:mm",
-                      day: "dd MMM",
-                      week: "dd MMM yyyy"
+                      hour: "HH:mm, dd MMM"
                     }
                   },
                   min: intervals[0].start,
