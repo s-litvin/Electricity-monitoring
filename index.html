@@ -43,10 +43,7 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    .container {
-      width: 100%;
-      max-width: 600px;
-    }
+    .container { width: 100%; max-width: 600px; }
 
     /* Status Card */
     .status-card {
@@ -56,110 +53,74 @@
       text-align: center;
       box-shadow: var(--shadow);
       margin-bottom: 20px;
+      position: relative;
     }
+
+    /* Badge "Оновлення" */
+    .updating-badge {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      font-size: 0.8rem;
+      color: var(--accent);
+      font-weight: 600;
+      display: none;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
 
     .icon { font-size: 3.5rem; margin-bottom: 5px; display: block; }
     .status-text { font-size: 2rem; font-weight: 800; margin: 0; line-height: 1.2;}
     .duration-text { font-size: 1.2rem; font-weight: 500; margin-top: 5px; color: var(--text-sec); }
-    .status-sub { color: var(--text-sec); margin-top: 10px; font-size: 0.8rem; opacity: 0.7;}
+    .status-sub { color: var(--text-sec); margin-top: 10px; font-size: 0.8rem; opacity: 0.7; }
     .online { color: var(--green); }
     .offline { color: var(--red); }
 
     /* Controls */
     .controls {
-      display: flex;
-      background: var(--card-bg);
-      padding: 5px;
-      border-radius: 12px;
-      box-shadow: var(--shadow);
-      margin-bottom: 15px;
-      justify-content: space-between;
+      display: flex; background: var(--card-bg); padding: 5px; border-radius: 12px;
+      box-shadow: var(--shadow); margin-bottom: 15px; justify-content: space-between;
     }
-
     .time-btn {
-      flex: 1;
-      border: none;
-      background: transparent;
-      color: var(--text-sec);
-      padding: 10px 0;
-      font-size: 0.9rem;
-      font-weight: 600;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
+      flex: 1; border: none; background: transparent; color: var(--text-sec);
+      padding: 10px 0; font-size: 0.9rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.2s;
     }
-
     .time-btn.active {
-      background-color: var(--text-main);
-      color: var(--card-bg);
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      background-color: var(--text-main); color: var(--card-bg); box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
+    /* Chart */
     .chart-card {
-      background-color: var(--card-bg);
-      border-radius: 20px;
-      padding: 15px 10px;
-      box-shadow: var(--shadow);
-      height: 320px;
-      position: relative;
-      margin-bottom: 20px;
-      overflow: hidden;
+      background-color: var(--card-bg); border-radius: 20px; padding: 15px 10px;
+      box-shadow: var(--shadow); height: 350px; position: relative; margin-bottom: 20px;
     }
 
-    /* CHART LOADER OVERLAY */
     .chart-loader {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(255, 255, 255, 0.8);
-      display: none;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 10;
-      backdrop-filter: blur(2px);
-      border-radius: 20px;
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.8);
+      display: none; flex-direction: column; justify-content: center; align-items: center;
+      z-index: 10; backdrop-filter: blur(2px); border-radius: 20px;
     }
-    @media (prefers-color-scheme: dark) {
-      .chart-loader { background: rgba(30, 30, 30, 0.8); }
-    }
+    @media (prefers-color-scheme: dark) { .chart-loader { background: rgba(30, 30, 30, 0.8); } }
 
     .spinner {
-      width: 40px; height: 40px;
-      border: 4px solid var(--text-sec);
-      border-top: 4px solid var(--accent);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 10px;
+      width: 40px; height: 40px; border: 4px solid var(--text-sec); border-top: 4px solid var(--accent);
+      border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px;
     }
-    .loader-text { font-weight: bold; color: var(--text-main); }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     /* Settings */
     .settings-card {
-      background-color: var(--card-bg);
-      border-radius: 15px;
-      padding: 15px;
-      box-shadow: var(--shadow);
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      background-color: var(--card-bg); border-radius: 15px; padding: 15px; box-shadow: var(--shadow);
+      display: flex; flex-direction: column; gap: 10px;
     }
-
-    .settings-label { font-size: 0.8rem; color: var(--text-sec); text-transform: uppercase; letter-spacing: 1px; font-weight: bold;}
     .input-group { display: flex; gap: 10px; }
-    input {
-      flex: 1; padding: 10px; border-radius: 8px;
-      border: 1px solid var(--text-sec); background: var(--bg-color); color: var(--text-main); font-size: 1rem;
-    }
-    .save-btn {
-      background-color: var(--accent); color: white; border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer;
-    }
-    .debug-info { font-size: 0.75rem; color: var(--text-sec); margin-top: 5px; }
+    input { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--text-sec); background: var(--bg-color); color: var(--text-main); font-size: 1rem; }
+    .save-btn { background-color: var(--accent); color: white; border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .debug-info { font-size: 0.75rem; color: var(--text-sec); margin-top: 5px; text-align: center; }
 
     #pageLoading {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: var(--bg-color); display: flex; justify-content: center;
-      align-items: center; z-index: 1000; font-size: 1.2rem; font-weight: bold;
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-color);
+      display: flex; justify-content: center; align-items: center; z-index: 1000; font-size: 1.2rem; font-weight: bold;
     }
   </style>
 </head>
@@ -169,6 +130,8 @@
 
 <div class="container">
   <div class="status-card" id="statusCard">
+    <div class="updating-badge" id="updatingBadge">🔄 Оновлення...</div>
+
     <span class="icon" id="statusIcon">⚡</span>
     <h1 class="status-text" id="statusText">Аналіз...</h1>
     <div class="duration-text" id="durationText">Зачекайте</div>
@@ -176,22 +139,21 @@
   </div>
 
   <div class="controls">
-    <button class="time-btn" onclick="setRange(6, this)">6 год</button>
-    <button class="time-btn active" onclick="setRange(12, this)">12 год</button>
-    <button class="time-btn" onclick="setRange(24, this)">24 год</button>
-    <button class="time-btn" onclick="setRange(168, this)">7 днів</button>
+    <button class="time-btn" onclick="changeRange(6, this)">6 год</button>
+    <button class="time-btn active" onclick="changeRange(12, this)">12 год</button>
+    <button class="time-btn" onclick="changeRange(24, this)">24 год</button>
+    <button class="time-btn" onclick="changeRange(168, this)">7 днів</button>
   </div>
 
   <div class="chart-card">
     <div class="chart-loader" id="chartLoader">
       <div class="spinner"></div>
-      <div class="loader-text">Завантаження архіву...</div>
+      <div>Завантаження архіву...</div>
     </div>
     <canvas id="powerChart"></canvas>
   </div>
 
   <div class="settings-card">
-    <div class="settings-label">Налаштування каналу</div>
     <div class="input-group">
       <input type="text" id="channelInput" placeholder="ThingSpeak Channel ID">
       <button class="save-btn" onclick="saveChannel()">OK</button>
@@ -201,35 +163,92 @@
 </div>
 
 <script>
+  // --- URL PARAMS & CONFIG ---
+  const urlParams = new URLSearchParams(window.location.search);
+
+  // 1. BotId
   const defaultChannel = '2013961';
-  let currentChannelId = localStorage.getItem('ts_channel_id') || defaultChannel;
+  let currentChannelId = urlParams.get('botId') || localStorage.getItem('ts_channel_id') || defaultChannel;
   document.getElementById('channelInput').value = currentChannelId;
 
-  let detectedTimeoutMinutes = 5;
+  // 2. Clean URL
+  updateUrlParams();
+
+  let currentHours = 12;
+  const FORCED_TIMEOUT_MINUTES = 10;
+
   let powerChartInstance = null;
   let globalFeeds = [];
   let isFullHistoryLoaded = false;
 
-  async function initialLoad() {
+  // --- PLUGIN "NOW LINE" ---
+  const nowLinePlugin = {
+    id: 'nowLine',
+    afterDraw: (chart) => {
+      const ctx = chart.ctx;
+      const xAxis = chart.scales.x;
+      const yAxis = chart.scales.y;
+      const now = new Date().getTime();
+
+      if (now >= xAxis.min && now <= xAxis.max) {
+        const x = xAxis.getPixelForValue(now);
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(x, yAxis.top);
+        ctx.lineTo(x, yAxis.bottom);
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = '#ff3b30';
+        ctx.setLineDash([5, 5]);
+        ctx.stroke();
+
+        // 24-годинний формат часу на графіку
+        const date = new Date(now);
+        const timeString = date.toLocaleTimeString('uk-UA', {hour: '2-digit', minute:'2-digit'});
+
+        ctx.fillStyle = '#ff3b30';
+        ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(timeString, x, yAxis.top - 5);
+        ctx.restore();
+      }
+    }
+  };
+
+  function init() {
+    initialLoad();
+  }
+
+  async function initialLoad(isBackground = false) {
     const URL = `https://api.thingspeak.com/channels/${currentChannelId}/feeds.json?results=1500`;
+
+    if (isBackground) document.getElementById('updatingBadge').style.display = 'block';
+
     try {
       const response = await fetch(URL);
-      if (!response.ok) throw new Error("Channel not found");
+      if (!response.ok) throw new Error("Channel error");
       const data = await response.json();
 
       globalFeeds = data.feeds;
-      detectedTimeoutMinutes = calculate3xTimeout(globalFeeds);
-      updateCurrentStatus(globalFeeds);
+      updateApp();
 
-      setRange(12, document.querySelector('.time-btn.active'));
+      if (currentHours !== 168) {
+        drawChart(currentHours);
+      }
 
-      document.getElementById('pageLoading').style.display = 'none';
+      if (!isBackground) document.getElementById('pageLoading').style.display = 'none';
     } catch (error) {
-      handleError(error);
+      console.error(error);
+      if (!isBackground) document.getElementById('statusText').innerText = "Помилка";
+    } finally {
+      if (isBackground) {
+        setTimeout(() => {
+          document.getElementById('updatingBadge').style.display = 'none';
+        }, 1000);
+      }
     }
   }
 
-  async function loadFullHistory(btnElement) {
+  async function loadFullHistory() {
     const loader = document.getElementById('chartLoader');
     loader.style.display = 'flex';
     const URL = `https://api.thingspeak.com/channels/${currentChannelId}/feeds.json?results=8000`;
@@ -239,62 +258,20 @@
 
       globalFeeds = data.feeds;
       isFullHistoryLoaded = true;
-      detectedTimeoutMinutes = calculate3xTimeout(globalFeeds);
 
+      updateApp();
       drawChart(168);
-      updateButtons(btnElement);
+      document.getElementById('pageLoading').style.display = 'none';
     } catch (error) {
-      console.error(error);
-      alert("Помилка завантаження архіву.");
+      alert("Помилка завантаження архіву");
     } finally {
       loader.style.display = 'none';
     }
   }
 
-  function setRange(hours, btnElement) {
-    if (hours === 168 && !isFullHistoryLoaded) {
-      loadFullHistory(btnElement);
-      return;
-    }
-    updateButtons(btnElement);
-    drawChart(hours);
-  }
-
-  function updateButtons(activeBtn) {
-    document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
-    if(activeBtn) activeBtn.classList.add('active');
-  }
-
-  function drawChart(hours) {
-    const now = new Date().getTime();
-    const minTime = now - (hours * 60 * 60 * 1000);
-    processChart(globalFeeds, minTime, now);
-  }
-
-  function handleError(error) {
-    console.error("Error:", error);
-    document.getElementById('statusText').innerText = "Помилка";
-    document.getElementById('pageLoading').style.display = 'none';
-  }
-
-  function calculate3xTimeout(feeds) {
-    if (!feeds || feeds.length < 10) return 5;
-    const sample = feeds.slice(-50);
-    const diffs = [];
-    for (let i = 1; i < sample.length; i++) {
-      const diff = (new Date(sample[i].created_at) - new Date(sample[i-1].created_at)) / 1000;
-      if (diff > 0 && diff < 3600) diffs.push(diff);
-    }
-    if (diffs.length === 0) return 5;
-    diffs.sort((a, b) => a - b);
-    const medianSec = diffs[Math.floor(diffs.length / 2)];
-    const timeoutSec = medianSec * 3;
-    const finalTimeoutMin = Math.max(timeoutSec / 60, 1.5);
-
-    document.getElementById('debugInfo').innerHTML =
-            `Інтервал пінгів: <b>${Math.round(medianSec)} сек</b>.<br>` +
-            `Поріг розриву (3x): <b>${finalTimeoutMin.toFixed(1)} хв</b>`;
-    return finalTimeoutMin;
+  function updateApp() {
+    updateCurrentStatus(globalFeeds);
+    document.getElementById('debugInfo').innerText = `ID: ${currentChannelId} | Фільтр: > ${FORCED_TIMEOUT_MINUTES} хв`;
   }
 
   function updateCurrentStatus(feeds) {
@@ -309,31 +286,37 @@
     const durationText = document.getElementById('durationText');
     const lastSeen = document.getElementById('lastSeen');
 
-    const isOnline = minutesSinceLast <= detectedTimeoutMinutes;
+    const isOnline = minutesSinceLast <= FORCED_TIMEOUT_MINUTES;
+
+    // 24-годинний формат часу для тексту "Оновлено"
+    const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    const timeStr = new Date(lastEntryTime).toLocaleTimeString('uk-UA', timeOptions);
+    const disappearTimeStr = new Date(lastEntryTime).toLocaleTimeString('uk-UA', timeOptions);
 
     if (isOnline) {
       statusIcon.innerText = "💡";
       statusText.innerText = "Світло Є";
       statusText.className = "status-text online";
+
       let startTime = lastEntryTime;
       for (let i = feeds.length - 1; i > 0; i--) {
         const current = new Date(feeds[i].created_at).getTime();
         const prev = new Date(feeds[i-1].created_at).getTime();
         const diffMins = (current - prev) / (1000 * 60);
-        if (diffMins > detectedTimeoutMinutes) {
+        if (diffMins > FORCED_TIMEOUT_MINUTES) {
           startTime = current;
           break;
         }
         startTime = prev;
       }
       durationText.innerText = `Триває: ${formatDuration(now - startTime)}`;
-      lastSeen.innerText = `Останній сигнал: ${new Date(lastEntryTime).toLocaleTimeString()}`;
+      lastSeen.innerText = `Оновлено: ${timeStr}`;
     } else {
       statusIcon.innerText = "🕯️";
       statusText.innerText = "Світла Немає";
       statusText.className = "status-text offline";
       durationText.innerText = `Відсутнє: ${formatDuration(now - lastEntryTime)}`;
-      lastSeen.innerText = `Зникло о: ${new Date(lastEntryTime).toLocaleTimeString()}`;
+      lastSeen.innerText = `Зникло о: ${disappearTimeStr}`;
     }
   }
 
@@ -343,6 +326,24 @@
     const minutes = totalMinutes % 60;
     if (hours === 0) return `${minutes} хв`;
     return `${hours} год ${minutes} хв`;
+  }
+
+  function changeRange(hours, btnElement) {
+    currentHours = hours;
+    document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+    btnElement.classList.add('active');
+
+    if (hours === 168 && !isFullHistoryLoaded) {
+      loadFullHistory();
+    } else {
+      drawChart(hours);
+    }
+  }
+
+  function drawChart(hours) {
+    const now = new Date().getTime();
+    const minTime = now - (hours * 60 * 60 * 1000);
+    processChart(globalFeeds, minTime, now);
   }
 
   function processChart(feeds, minTime, maxTime) {
@@ -356,7 +357,7 @@
       const currentTime = new Date(feed.created_at).getTime();
       if (index > 0) {
         const diffMinutes = (currentTime - lastTime) / (1000 * 60);
-        if (diffMinutes > detectedTimeoutMinutes) {
+        if (diffMinutes > FORCED_TIMEOUT_MINUTES) {
           chartData.push({ x: lastTime + 1000, y: 0 });
           chartData.push({ x: currentTime - 1000, y: 0 });
         }
@@ -368,15 +369,13 @@
     const lastEntry = feeds[feeds.length-1];
     if (lastEntry) {
       const lastEntryTime = new Date(lastEntry.created_at).getTime();
-      if ((maxTime - lastEntryTime) / 60000 <= detectedTimeoutMinutes) {
+      if ((maxTime - lastEntryTime) / 60000 <= FORCED_TIMEOUT_MINUTES) {
         chartData.push({ x: maxTime, y: 1 });
       }
     }
 
-    const nowLineData = [{ x: maxTime, y: 0 }, { x: maxTime, y: 1.1 }];
-
     let gradient = ctx.createLinearGradient(0, 0, 0, 300);
-    gradient.addColorStop(0, 'rgba(52, 199, 89, 0.4)');
+    gradient.addColorStop(0, 'rgba(52, 199, 89, 0.6)');
     gradient.addColorStop(1, 'rgba(52, 199, 89, 0.05)');
 
     if (powerChartInstance) powerChartInstance.destroy();
@@ -384,34 +383,21 @@
     powerChartInstance = new Chart(ctx, {
       type: 'line',
       data: {
-        datasets: [
-          {
-            label: 'Стан',
-            data: chartData,
-            borderColor: '#34c759',
-            borderWidth: 2,
-            backgroundColor: gradient,
-            fill: true,
-            pointRadius: 0,
-            stepped: true,
-            order: 2
-          },
-          {
-            label: 'Зараз',
-            data: nowLineData,
-            borderColor: '#ff3b30',
-            borderWidth: 1.5,
-            borderDash: [5, 5],
-            pointRadius: 0,
-            fill: false,
-            order: 1
-          }
-        ]
+        datasets: [{
+          data: chartData,
+          borderColor: '#34c759',
+          borderWidth: 0,
+          backgroundColor: gradient,
+          fill: true,
+          pointRadius: 0,
+          stepped: true
+        }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         animation: false,
+        layout: { padding: { top: 20 } },
         plugins: { legend: { display: false }, tooltip: { enabled: false } },
         scales: {
           x: {
@@ -419,37 +405,41 @@
             min: minTime,
             max: maxTime,
             time: { displayFormats: { hour: 'HH:mm', day: 'dd.MM' } },
-            grid: {
-              display: true, // УВІМКНУЛИ ВЕРТИКАЛЬНУ СІТКУ
-              color: 'rgba(0,0,0,0.05)'
-            },
-            ticks: {
-              maxRotation: 0,
-              autoSkip: true,
-              maxTicksLimit: 10 // ЗБІЛЬШИЛИ КІЛЬКІСТЬ МІТОК ДО 10
-            }
+            grid: { display: true, color: 'rgba(0,0,0,0.05)' },
+            ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 8 }
           },
           y: { display: false, min: 0, max: 1.2 }
         }
-      }
+      },
+      plugins: [nowLinePlugin]
     });
   }
 
   function saveChannel() {
     const val = document.getElementById('channelInput').value.trim();
     if(val) {
+      currentChannelId = val;
       localStorage.setItem('ts_channel_id', val);
+      updateUrlParams();
       location.reload();
-    } else {
-      alert("Введіть ID каналу");
     }
   }
 
-  initialLoad();
+  function updateUrlParams() {
+    const url = new URL(window.location);
+    url.searchParams.set('botId', currentChannelId);
+    url.searchParams.delete('hours');
+    window.history.pushState({}, '', url);
+  }
 
   setInterval(() => {
-    if(!isFullHistoryLoaded) initialLoad();
-  }, 30000);
+    if (currentHours !== 168) {
+      initialLoad(true);
+    }
+  }, 60000);
+
+  init();
+
 </script>
 </body>
 </html>
