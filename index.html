@@ -14,6 +14,7 @@
       --text-main: #1a1a1a;
       --text-sec: #65676b;
       --green: #34c759;
+      --yellow: #ffcc00;
       --red: #ff3b30;
       --accent: #007bff;
       --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -45,7 +46,6 @@
 
     .container { width: 100%; max-width: 600px; }
 
-    /* Status Card */
     .status-card {
       background-color: var(--card-bg);
       border-radius: 20px;
@@ -54,18 +54,12 @@
       box-shadow: var(--shadow);
       margin-bottom: 20px;
       position: relative;
+      z-index: 2;
     }
 
-    /* Badge "Оновлення" */
     .updating-badge {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      font-size: 0.8rem;
-      color: var(--accent);
-      font-weight: 600;
-      display: none;
-      animation: pulse 1.5s infinite;
+      position: absolute; top: 15px; right: 15px; font-size: 0.8rem; color: var(--accent);
+      font-weight: 600; display: none; animation: pulse 1.5s infinite;
     }
     @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
 
@@ -73,13 +67,15 @@
     .status-text { font-size: 2rem; font-weight: 800; margin: 0; line-height: 1.2;}
     .duration-text { font-size: 1.2rem; font-weight: 500; margin-top: 5px; color: var(--text-sec); }
     .status-sub { color: var(--text-sec); margin-top: 10px; font-size: 0.8rem; opacity: 0.7; }
+
     .online { color: var(--green); }
+    .warning { color: var(--yellow); }
     .offline { color: var(--red); }
 
-    /* Controls */
     .controls {
       display: flex; background: var(--card-bg); padding: 5px; border-radius: 12px;
       box-shadow: var(--shadow); margin-bottom: 15px; justify-content: space-between;
+      z-index: 2; position: relative;
     }
     .time-btn {
       flex: 1; border: none; background: transparent; color: var(--text-sec);
@@ -89,10 +85,10 @@
       background-color: var(--text-main); color: var(--card-bg); box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
-    /* Chart */
     .chart-card {
       background-color: var(--card-bg); border-radius: 20px; padding: 15px 10px;
       box-shadow: var(--shadow); height: 350px; position: relative; margin-bottom: 20px;
+      overflow: hidden;
     }
 
     .chart-loader {
@@ -108,7 +104,6 @@
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* Settings */
     .settings-card {
       background-color: var(--card-bg); border-radius: 15px; padding: 15px; box-shadow: var(--shadow);
       display: flex; flex-direction: column; gap: 10px;
@@ -163,32 +158,34 @@
 </div>
 
 <script>
-  // --- URL PARAMS & CONFIG ---
+  // --- CONFIG ---
   const urlParams = new URLSearchParams(window.location.search);
-
-  // 1. BotId
   const defaultChannel = '2013961';
   let currentChannelId = urlParams.get('botId') || localStorage.getItem('ts_channel_id') || defaultChannel;
   document.getElementById('channelInput').value = currentChannelId;
 
-  // 2. Clean URL
-  updateUrlParams();
-
   let currentHours = 12;
-  const FORCED_TIMEOUT_MINUTES = 10;
+  let detectedPingIntervalMin = 0.33;
+  const OFFLINE_THRESHOLD_MINUTES = 15;
 
   let powerChartInstance = null;
   let globalFeeds = [];
   let isFullHistoryLoaded = false;
 
-  // --- PLUGIN "NOW LINE" ---
+  // Глобальна змінна для точного часу малювання лінії
+  let drawNowTimestamp = 0;
+
+  // --- PLUGIN 1: NOW LINE ---
   const nowLinePlugin = {
     id: 'nowLine',
     afterDraw: (chart) => {
       const ctx = chart.ctx;
       const xAxis = chart.scales.x;
       const yAxis = chart.scales.y;
-      const now = new Date().getTime();
+
+      // Використовуємо глобальну змінну, яку ми зафіксували при оновленні графіка
+      // Це гарантує, що лінія завжди буде в межах scale.max
+      const now = drawNowTimestamp;
 
       if (now >= xAxis.min && now <= xAxis.max) {
         const x = xAxis.getPixelForValue(now);
@@ -196,31 +193,99 @@
         ctx.beginPath();
         ctx.moveTo(x, yAxis.top);
         ctx.lineTo(x, yAxis.bottom);
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 2; // Трохи жирніше для видимості
         ctx.strokeStyle = '#ff3b30';
-        ctx.setLineDash([5, 5]);
+        ctx.setLineDash([5, 3]);
         ctx.stroke();
 
-        // 24-годинний формат часу на графіку
         const date = new Date(now);
         const timeString = date.toLocaleTimeString('uk-UA', {hour: '2-digit', minute:'2-digit'});
 
-        ctx.fillStyle = '#ff3b30';
+        // Фон для тексту, щоб читалось на будь-якому фоні
         ctx.font = 'bold 12px Arial';
+        const textWidth = ctx.measureText(timeString).width;
+        const textPadding = 4;
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.fillRect(x - textWidth/2 - textPadding, yAxis.top, textWidth + textPadding*2, 16);
+
+        ctx.fillStyle = '#ff3b30';
         ctx.textAlign = 'center';
-        ctx.fillText(timeString, x, yAxis.top - 5);
+        ctx.fillText(timeString, x, yAxis.top + 12);
+
         ctx.restore();
       }
     }
   };
 
+  // --- PLUGIN 2: DAY / NIGHT CYCLE ---
+  const dayNightPlugin = {
+    id: 'dayNightBackground',
+    beforeDraw: (chart) => {
+      const ctx = chart.ctx;
+      const xAxis = chart.scales.x;
+      const yAxis = chart.scales.y;
+      const startTime = xAxis.min;
+      const endTime = xAxis.max;
+
+      let curr = new Date(startTime);
+      curr.setMinutes(0, 0, 0);
+
+      while (curr.getTime() <= endTime) {
+        const timestamp = curr.getTime();
+        const hour = curr.getHours();
+        const nextHour = new Date(curr);
+        nextHour.setHours(curr.getHours() + 1);
+
+        const xStart = xAxis.getPixelForValue(timestamp);
+        const xEnd = xAxis.getPixelForValue(nextHour.getTime());
+        const width = xEnd - xStart;
+
+        if (width < 0.5) { curr = nextHour; continue; }
+
+        const isDay = (hour >= 6 && hour < 22);
+
+        ctx.save();
+        const gradient = ctx.createLinearGradient(0, yAxis.top, 0, yAxis.bottom);
+        if (isDay) {
+          gradient.addColorStop(0, 'rgba(255, 235, 160, 0.25)');
+          gradient.addColorStop(1, 'rgba(255, 255, 255, 0.05)');
+        } else {
+          gradient.addColorStop(0, 'rgba(10, 10, 30, 0.15)');
+          gradient.addColorStop(1, 'rgba(20, 30, 80, 0.05)');
+        }
+
+        ctx.fillStyle = gradient;
+        ctx.fillRect(xStart, yAxis.top, width, yAxis.bottom - yAxis.top);
+
+        if (width > 15) {
+          ctx.font = "20px Arial";
+          ctx.textAlign = "center";
+          ctx.fillStyle = "rgba(0,0,0,0.5)";
+          if (hour === 12) ctx.fillText("☀️", xStart + width/2, yAxis.top + 30);
+          else if (hour === 0) ctx.fillText("🌙", xStart + width/2, yAxis.top + 30);
+        }
+        ctx.restore();
+        curr = nextHour;
+      }
+    }
+  };
+
+  // --- APP LOGIC ---
   function init() {
+    updateUrlParams();
     initialLoad();
+  }
+
+  function updateUrlParams() {
+    const url = new URL(window.location);
+    url.searchParams.set('botId', currentChannelId);
+    url.searchParams.delete('hours');
+    window.history.pushState({}, '', url);
   }
 
   async function initialLoad(isBackground = false) {
     const URL = `https://api.thingspeak.com/channels/${currentChannelId}/feeds.json?results=1500`;
-
     if (isBackground) document.getElementById('updatingBadge').style.display = 'block';
 
     try {
@@ -229,22 +294,15 @@
       const data = await response.json();
 
       globalFeeds = data.feeds;
+      detectedPingIntervalMin = calculatePingInterval(globalFeeds);
+
       updateApp();
-
-      if (currentHours !== 168) {
-        drawChart(currentHours);
-      }
-
+      if (currentHours !== 168) drawChart(currentHours);
       if (!isBackground) document.getElementById('pageLoading').style.display = 'none';
     } catch (error) {
-      console.error(error);
       if (!isBackground) document.getElementById('statusText').innerText = "Помилка";
     } finally {
-      if (isBackground) {
-        setTimeout(() => {
-          document.getElementById('updatingBadge').style.display = 'none';
-        }, 1000);
-      }
+      if (isBackground) setTimeout(() => document.getElementById('updatingBadge').style.display = 'none', 1000);
     }
   }
 
@@ -255,23 +313,39 @@
     try {
       const response = await fetch(URL);
       const data = await response.json();
-
       globalFeeds = data.feeds;
       isFullHistoryLoaded = true;
+      detectedPingIntervalMin = calculatePingInterval(globalFeeds);
 
       updateApp();
       drawChart(168);
       document.getElementById('pageLoading').style.display = 'none';
     } catch (error) {
-      alert("Помилка завантаження архіву");
+      alert("Помилка завантаження");
     } finally {
       loader.style.display = 'none';
     }
   }
 
+  function calculatePingInterval(feeds) {
+    if (!feeds || feeds.length < 5) return 0.33;
+    const sample = feeds.slice(-50);
+    const diffs = [];
+    for (let i = 1; i < sample.length; i++) {
+      const diff = (new Date(sample[i].created_at) - new Date(sample[i-1].created_at)) / 1000;
+      if (diff > 0 && diff < 3600) diffs.push(diff);
+    }
+    if (diffs.length === 0) return 0.33;
+    diffs.sort((a, b) => a - b);
+    const medianSec = diffs[Math.floor(diffs.length / 2)];
+    return medianSec / 60;
+  }
+
   function updateApp() {
     updateCurrentStatus(globalFeeds);
-    document.getElementById('debugInfo').innerText = `ID: ${currentChannelId} | Фільтр: > ${FORCED_TIMEOUT_MINUTES} хв`;
+    const pingSec = Math.round(detectedPingIntervalMin * 60);
+    document.getElementById('debugInfo').innerText =
+            `Інтервал пінгів: ~${pingSec} сек. | Поріг "Немає світла": > 15 хв`;
   }
 
   function updateCurrentStatus(feeds) {
@@ -286,14 +360,11 @@
     const durationText = document.getElementById('durationText');
     const lastSeen = document.getElementById('lastSeen');
 
-    const isOnline = minutesSinceLast <= FORCED_TIMEOUT_MINUTES;
-
-    // 24-годинний формат часу для тексту "Оновлено"
+    const lagThreshold = detectedPingIntervalMin * 2;
     const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
     const timeStr = new Date(lastEntryTime).toLocaleTimeString('uk-UA', timeOptions);
-    const disappearTimeStr = new Date(lastEntryTime).toLocaleTimeString('uk-UA', timeOptions);
 
-    if (isOnline) {
+    if (minutesSinceLast <= Math.max(lagThreshold, 2.0)) {
       statusIcon.innerText = "💡";
       statusText.innerText = "Світло Є";
       statusText.className = "status-text online";
@@ -303,7 +374,7 @@
         const current = new Date(feeds[i].created_at).getTime();
         const prev = new Date(feeds[i-1].created_at).getTime();
         const diffMins = (current - prev) / (1000 * 60);
-        if (diffMins > FORCED_TIMEOUT_MINUTES) {
+        if (diffMins > OFFLINE_THRESHOLD_MINUTES) {
           startTime = current;
           break;
         }
@@ -311,12 +382,19 @@
       }
       durationText.innerText = `Триває: ${formatDuration(now - startTime)}`;
       lastSeen.innerText = `Оновлено: ${timeStr}`;
+
+    } else if (minutesSinceLast > Math.max(lagThreshold, 2.0) && minutesSinceLast < OFFLINE_THRESHOLD_MINUTES) {
+      statusIcon.innerText = "⚠️";
+      statusText.innerText = "Зв'язок нестабільний";
+      statusText.className = "status-text warning";
+      durationText.innerText = `Немає даних: ${formatDuration(now - lastEntryTime)}`;
+      lastSeen.innerText = `Можливо збій Wi-Fi. Чекаємо...`;
     } else {
       statusIcon.innerText = "🕯️";
       statusText.innerText = "Світла Немає";
       statusText.className = "status-text offline";
       durationText.innerText = `Відсутнє: ${formatDuration(now - lastEntryTime)}`;
-      lastSeen.innerText = `Зникло о: ${disappearTimeStr}`;
+      lastSeen.innerText = `Зникло о: ${timeStr}`;
     }
   }
 
@@ -332,21 +410,21 @@
     currentHours = hours;
     document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
     btnElement.classList.add('active');
-
-    if (hours === 168 && !isFullHistoryLoaded) {
-      loadFullHistory();
-    } else {
-      drawChart(hours);
-    }
+    if (hours === 168 && !isFullHistoryLoaded) loadFullHistory();
+    else drawChart(hours);
   }
 
   function drawChart(hours) {
     const now = new Date().getTime();
+
+    // Зберігаємо цей час для малювання лінії, щоб не було розсинхрону
+    drawNowTimestamp = now;
+
     const minTime = now - (hours * 60 * 60 * 1000);
     processChart(globalFeeds, minTime, now);
   }
 
-  function processChart(feeds, minTime, maxTime) {
+  function processChart(feeds, minTime, nowTime) {
     const ctx = document.getElementById('powerChart').getContext('2d');
     const chartData = [];
     let lastTime = 0;
@@ -357,7 +435,7 @@
       const currentTime = new Date(feed.created_at).getTime();
       if (index > 0) {
         const diffMinutes = (currentTime - lastTime) / (1000 * 60);
-        if (diffMinutes > FORCED_TIMEOUT_MINUTES) {
+        if (diffMinutes > OFFLINE_THRESHOLD_MINUTES) {
           chartData.push({ x: lastTime + 1000, y: 0 });
           chartData.push({ x: currentTime - 1000, y: 0 });
         }
@@ -369,16 +447,21 @@
     const lastEntry = feeds[feeds.length-1];
     if (lastEntry) {
       const lastEntryTime = new Date(lastEntry.created_at).getTime();
-      if ((maxTime - lastEntryTime) / 60000 <= FORCED_TIMEOUT_MINUTES) {
-        chartData.push({ x: maxTime, y: 1 });
+      if ((nowTime - lastEntryTime) / 60000 < OFFLINE_THRESHOLD_MINUTES) {
+        chartData.push({ x: nowTime, y: 1 });
       }
     }
 
     let gradient = ctx.createLinearGradient(0, 0, 0, 300);
-    gradient.addColorStop(0, 'rgba(52, 199, 89, 0.6)');
-    gradient.addColorStop(1, 'rgba(52, 199, 89, 0.05)');
+    gradient.addColorStop(0, 'rgba(52, 199, 89, 0.8)');
+    gradient.addColorStop(1, 'rgba(52, 199, 89, 0.1)');
 
     if (powerChartInstance) powerChartInstance.destroy();
+
+    // ДОДАЄМО БУФЕР ЧАСУ СПРАВА (+5%), ЩОБ ЛІНІЯ "ЗАРАЗ" БУЛА ВИДНА
+    const duration = nowTime - minTime;
+    const buffer = duration * 0.05;
+    const maxScale = nowTime + buffer;
 
     powerChartInstance = new Chart(ctx, {
       type: 'line',
@@ -403,7 +486,7 @@
           x: {
             type: 'time',
             min: minTime,
-            max: maxTime,
+            max: maxScale, // Використовуємо час з буфером
             time: { displayFormats: { hour: 'HH:mm', day: 'dd.MM' } },
             grid: { display: true, color: 'rgba(0,0,0,0.05)' },
             ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 8 }
@@ -411,7 +494,7 @@
           y: { display: false, min: 0, max: 1.2 }
         }
       },
-      plugins: [nowLinePlugin]
+      plugins: [dayNightPlugin, nowLinePlugin]
     });
   }
 
@@ -425,19 +508,7 @@
     }
   }
 
-  function updateUrlParams() {
-    const url = new URL(window.location);
-    url.searchParams.set('botId', currentChannelId);
-    url.searchParams.delete('hours');
-    window.history.pushState({}, '', url);
-  }
-
-  setInterval(() => {
-    if (currentHours !== 168) {
-      initialLoad(true);
-    }
-  }, 60000);
-
+  setInterval(() => { if (currentHours !== 168) initialLoad(true); }, 60000);
   init();
 
 </script>
