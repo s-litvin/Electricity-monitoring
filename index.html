@@ -1,341 +1,455 @@
-<html>
+<!DOCTYPE html>
+<html lang="uk">
 <head>
-  <meta http-equiv="refresh" content="6000">
-</head>
-<body style="font-family:monospace">
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
-
-<div class="row" >
-  <div class="col-5">
-    <img src="logo.png" width="200">
-  </div>
-  <div class="col-7 justify-content-end">
-    <div class="row">
-      <div class="col-5">
-
-      </div>
-      <div class="col-7">
-        <div class="input-group input-group-lg">
-          <input type="text" id="botid" class="form-control" placeholder="Bot ID" aria-describedby="okbtn">
-          <button class="btn btn-outline-secondary" type="button" id="okbtn" onClick="gotourl(200)">OK</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<p></p>
-
-<div class="row">
-  <div class="col">
-    Статус  : <span id="status" style="padding: 5px"></span>
-  </div>
-</div>
-
-
-<style>
-.button-2 {
-background-color: rgba(51, 51, 51, 0.05);
-border-radius: 8px;border-width: 0;color: #333333;cursor: pointer;display: inline-block;
-font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial, sans-serif;
-font-size: 14px;font-weight: 500;line-height: 20px;list-style: none;margin: 0;
-padding: 10px 12px;text-align: center;transition: all 200ms;vertical-align: baseline;
-white-space: nowrap;user-select: none;-webkit-user-select: none;touch-action: manipulation;
-}
-</style>
-
-<p></p>
-
-<div class="row">
-  <div class="col">
-    <canvas id="myChart" height="50"></canvas>
-  </div>
-</div>
-
-
-<div class="row">
-  <div class="col-12">
-    <p>
-      <button role="button" class="button-2" onClick="gotourl(200)">6 годин</button>
-      <button role="button" class="button-2" onClick="gotourl(800)">18 годин</button>
-      <button role="button" class="button-2" onClick="gotourl(1600)">1 день</button>
-      <button role="button" class="button-2" onClick="gotourl(3000)">2 дні</button>
-      <button role="button" class="button-2" onClick="gotourl(6000)">5 днів</button>
-    </p>
-  </div>
-</div>
-
-<style>
-  body {
-    font-size: 16px;
-  }
-</style>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-
-<script>
-
-  let params = getSearchParameters();
-
-  let datasize = params.datasize ?? 200;
-  let botid = params.botId ?? 2013961;
-
-  document.getElementById('botid').value = botid;
-
-  function gotourl(datasize) {
-    window.location.href = '?datasize=' + datasize + '&botId=' + document.getElementById('botid').value;
-  }
-
-  var toHHMMSS = (secs) => {
-    let sec_num = parseInt(secs, 10)
-    let hours   = Math.floor(sec_num / 3600)
-    let minutes = Math.floor(sec_num / 60) % 60
-    let seconds = sec_num % 60
-
-    return [hours,minutes,seconds]
-            .map(v => v < 10 ? "0" + v : v)
-            .filter((v,i) => v !== "00" || i > 0)
-            .join(":")
-  }
-
-  function generateRandomHash() {
-    var result = '';
-    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    var charactersLength = characters.length;
-    for ( var i = 0; i < 8; i++ ) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Моніторинг Світла</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  <style>
+    :root {
+      --bg-color: #f0f2f5;
+      --card-bg: #ffffff;
+      --text-main: #1a1a1a;
+      --text-sec: #65676b;
+      --green: #34c759;
+      --red: #ff3b30;
+      --accent: #007bff;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
-    return result;
-  }
 
-  function httpGetAsync(theUrl, callback) {
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.onreadystatechange = function () {
-      if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-        callback(xmlHttp.responseText);
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-color: #121212;
+        --card-bg: #1e1e1e;
+        --text-main: #e4e6eb;
+        --text-sec: #b0b3b8;
+        --input-bg: #2c2c2e;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       }
     }
-    xmlHttp.open("GET", theUrl + '&p=' + generateRandomHash(), true);
-    xmlHttp.send(null);
-  }
 
-  function getSearchParameters() {
-    var prmstr = window.location.search.substr(1);
-    return prmstr != null && prmstr != "" ? transformToAssocArray(prmstr) : {};
-  }
-
-  function transformToAssocArray( prmstr ) {
-    let params = {};
-    let prmarr = prmstr.split("&");
-    for (let i = 0; i < prmarr.length; i++) {
-      let tmparr = prmarr[i].split("=");
-      params[tmparr[0]] = tmparr[1];
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      -webkit-tap-highlight-color: transparent;
     }
-    return params;
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+    }
+
+    /* Status Card */
+    .status-card {
+      background-color: var(--card-bg);
+      border-radius: 20px;
+      padding: 25px 20px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    .icon { font-size: 3.5rem; margin-bottom: 5px; display: block; }
+    .status-text { font-size: 2rem; font-weight: 800; margin: 0; line-height: 1.2;}
+    .duration-text { font-size: 1.2rem; font-weight: 500; margin-top: 5px; color: var(--text-sec); }
+    .status-sub { color: var(--text-sec); margin-top: 10px; font-size: 0.8rem; opacity: 0.7;}
+    .online { color: var(--green); }
+    .offline { color: var(--red); }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      background: var(--card-bg);
+      padding: 5px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      margin-bottom: 15px;
+      justify-content: space-between;
+    }
+
+    .time-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: var(--text-sec);
+      padding: 10px 0;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .time-btn.active {
+      background-color: var(--text-main);
+      color: var(--card-bg);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .chart-card {
+      background-color: var(--card-bg);
+      border-radius: 20px;
+      padding: 15px 10px;
+      box-shadow: var(--shadow);
+      height: 320px;
+      position: relative;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    /* CHART LOADER OVERLAY */
+    .chart-loader {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255, 255, 255, 0.8);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+      backdrop-filter: blur(2px);
+      border-radius: 20px;
+    }
+    @media (prefers-color-scheme: dark) {
+      .chart-loader { background: rgba(30, 30, 30, 0.8); }
+    }
+
+    .spinner {
+      width: 40px; height: 40px;
+      border: 4px solid var(--text-sec);
+      border-top: 4px solid var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 10px;
+    }
+    .loader-text { font-weight: bold; color: var(--text-main); }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Settings */
+    .settings-card {
+      background-color: var(--card-bg);
+      border-radius: 15px;
+      padding: 15px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .settings-label { font-size: 0.8rem; color: var(--text-sec); text-transform: uppercase; letter-spacing: 1px; font-weight: bold;}
+    .input-group { display: flex; gap: 10px; }
+    input {
+      flex: 1; padding: 10px; border-radius: 8px;
+      border: 1px solid var(--text-sec); background: var(--bg-color); color: var(--text-main); font-size: 1rem;
+    }
+    .save-btn {
+      background-color: var(--accent); color: white; border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer;
+    }
+    .debug-info { font-size: 0.75rem; color: var(--text-sec); margin-top: 5px; }
+
+    #pageLoading {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--bg-color); display: flex; justify-content: center;
+      align-items: center; z-index: 1000; font-size: 1.2rem; font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div id="pageLoading">Підключення...</div>
+
+<div class="container">
+  <div class="status-card" id="statusCard">
+    <span class="icon" id="statusIcon">⚡</span>
+    <h1 class="status-text" id="statusText">Аналіз...</h1>
+    <div class="duration-text" id="durationText">Зачекайте</div>
+    <div class="status-sub" id="lastSeen"></div>
+  </div>
+
+  <div class="controls">
+    <button class="time-btn" onclick="setRange(6, this)">6 год</button>
+    <button class="time-btn active" onclick="setRange(12, this)">12 год</button>
+    <button class="time-btn" onclick="setRange(24, this)">24 год</button>
+    <button class="time-btn" onclick="setRange(168, this)">7 днів</button>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-loader" id="chartLoader">
+      <div class="spinner"></div>
+      <div class="loader-text">Завантаження архіву...</div>
+    </div>
+    <canvas id="powerChart"></canvas>
+  </div>
+
+  <div class="settings-card">
+    <div class="settings-label">Налаштування каналу</div>
+    <div class="input-group">
+      <input type="text" id="channelInput" placeholder="ThingSpeak Channel ID">
+      <button class="save-btn" onclick="saveChannel()">OK</button>
+    </div>
+    <div class="debug-info" id="debugInfo"></div>
+  </div>
+</div>
+
+<script>
+  const defaultChannel = '2013961';
+  let currentChannelId = localStorage.getItem('ts_channel_id') || defaultChannel;
+  document.getElementById('channelInput').value = currentChannelId;
+
+  let detectedTimeoutMinutes = 5;
+  let powerChartInstance = null;
+  let globalFeeds = [];
+  let isFullHistoryLoaded = false;
+
+  async function initialLoad() {
+    const URL = `https://api.thingspeak.com/channels/${currentChannelId}/feeds.json?results=1500`;
+    try {
+      const response = await fetch(URL);
+      if (!response.ok) throw new Error("Channel not found");
+      const data = await response.json();
+
+      globalFeeds = data.feeds;
+      detectedTimeoutMinutes = calculate3xTimeout(globalFeeds);
+      updateCurrentStatus(globalFeeds);
+
+      setRange(12, document.querySelector('.time-btn.active'));
+
+      document.getElementById('pageLoading').style.display = 'none';
+    } catch (error) {
+      handleError(error);
+    }
   }
 
+  async function loadFullHistory(btnElement) {
+    const loader = document.getElementById('chartLoader');
+    loader.style.display = 'flex';
+    const URL = `https://api.thingspeak.com/channels/${currentChannelId}/feeds.json?results=8000`;
+    try {
+      const response = await fetch(URL);
+      const data = await response.json();
 
+      globalFeeds = data.feeds;
+      isFullHistoryLoaded = true;
+      detectedTimeoutMinutes = calculate3xTimeout(globalFeeds);
 
-  function convertTZ(date, tzString) {
-    return new Date((typeof date === "string" ? new Date(date) : date).toLocaleString("en-US", {timeZone: tzString}));
+      drawChart(168);
+      updateButtons(btnElement);
+    } catch (error) {
+      console.error(error);
+      alert("Помилка завантаження архіву.");
+    } finally {
+      loader.style.display = 'none';
+    }
   }
 
-  const ctx = document.getElementById('myChart');
-  var chart = new Chart(ctx, {
-    type: 'bar',
-    data: {datasets: [{data: []}]},
-  });
-
-  function convertDateTimeToKyivTZ(datetime) {
-    let d = new Date(Date.parse(datetime) + 60 * 60 * 2); // +2 hours
-    return d.getFullYear() + '-' + ("00" + (d.getMonth() + 1)).slice(-2) + '-' + ("00" + d.getDate()).slice(-2) + ' ' + ("00" + d.getHours()).slice(-2) + ':' + ("00" + d.getMinutes()).slice(-2) + ':' + ("00" + d.getSeconds()).slice(-2);
-  }
-
-  function formatDateTime(dateTime) {
-
-    let input = dateTime;
-    let date = new Date(input);
-
-    let options = {
-      hour: 'numeric',
-      minute: 'numeric'
-    };
-
-    let timeString = date.toLocaleString('uk-UK', options);
-
-    options = {
-      day: 'numeric',
-      month: 'short'
-    };
-
-    let dateString = date.toLocaleString('uk-UK', options);
-    return timeString + ', ' + dateString;
-  }
-
-
-  function loadChart(dataSize) {
-
-    chart.destroy();
-
-    if (!document.getElementById('botid').value) {
+  function setRange(hours, btnElement) {
+    if (hours === 168 && !isFullHistoryLoaded) {
+      loadFullHistory(btnElement);
       return;
     }
-
-    httpGetAsync('https://api.thingspeak.com/channels/' + botid + '/feeds.json?results=' + dataSize,
-        function (data) {
-          let channels = JSON.parse(data);
-          let bgColor = [];
-
-          let datetimes = channels.feeds;
-          let intervals = [];
-          let currentInterval = {start: datetimes[0].created_at};
-
-          for (let i = 1; i < datetimes.length; i++) {
-            let currentDatetime = new Date(datetimes[i].created_at);
-            let previousDatetime = new Date(datetimes[i - 1].created_at);
-            let diff = currentDatetime - previousDatetime;
-
-            if (diff / 1000 <= 200) {
-              // if the difference between current and previous datetime is less than 2 minutes,
-              // continue the current interval
-              continue;
-            } else {
-              // if the difference is greater than 2 minutes,
-              // close the current interval
-              currentInterval.stop = datetimes[i - 1].created_at;
-              currentInterval.duration = (new Date(currentInterval.stop) - new Date(currentInterval.start)) / 1000;
-              currentInterval.isGap = false;
-              intervals.push(currentInterval);
-
-              // save gap interval
-              let gapInterval = {
-                start: datetimes[i - 1].created_at,
-                stop: datetimes[i].created_at,
-                duration: (currentDatetime - previousDatetime) / 1000,
-                isGap: true
-              };
-
-              intervals.push(gapInterval);
-
-              // and start a new one
-              currentInterval = {start: datetimes[i].created_at};
-            }
-          }
-
-          // handle the last interval
-          currentInterval.stop = datetimes[datetimes.length - 1].created_at;
-          currentInterval.duration = (new Date(currentInterval.stop) - new Date(currentInterval.start)) / 1000;
-          currentInterval.isGap = false;
-          intervals.push(currentInterval);
-
-          let lastDuration = (new Date() - new Date(currentInterval.stop)) / 1000;
-          if (lastDuration > 200) {
-            intervals.push({
-              start: currentInterval.stop,
-              stop: new Date(),
-              duration: lastDuration,
-              isGap: true
-            });
-          }
-
-          let dataset = [];
-          let datasets = [{
-              label: 'Start',
-              data: [{x: intervals[0].start, y: 0}],
-              categoryPercentage: 1,
-              barPercentage: 1,
-            }
-          ];
-
-          for (let i = 0; i < intervals.length; i++) {
-            intervals[i].start = convertDateTimeToKyivTZ(intervals[i].start);
-            intervals[i].stop = convertDateTimeToKyivTZ(intervals[i].stop);
-
-            bgColor[i] = intervals[i].isGap ? '#ff8888' : '#ccffcc';
-            dataset.push({x: intervals[i].start, y: 2});
-
-            let label = [
-                '⌚ : ' + toHHMMSS(intervals[i].duration),
-                ' ',
-                (intervals[i].isGap ? '🪔️' : '💡') + ': ' + formatDateTime(intervals[i].start),
-                (intervals[i].isGap ? '💡' : '🪔') + ': ' + formatDateTime(intervals[i].stop),
-            ];
-            datasets.push({
-              label: label,
-              data: [intervals[i].duration * 1000],
-              backgroundColor: intervals[i].isGap ? '#ff8888' : '#ccffcc',
-              categoryPercentage: 1,
-              barPercentage: 1,
-            });
-          }
-          dataset.push({x: convertDateTimeToKyivTZ(new Date()), y: 0});
-
-
-          let isOnline = !intervals[intervals.length - 1].isGap;
-
-          document.getElementById("status").innerHTML = isOnline ? 'Світло є' : 'Немає світла';
-          document.getElementById("status").style.background = isOnline ? 'green' : 'red';
-          document.getElementById("status").style.color = 'white';
-
-          chart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-              datasets: datasets,
-              labels: ['']
-            },
-            maintainAspectRatio: false,
-            options: {
-              indexAxis: 'y',
-              responsive: true,
-              plugins: {
-                legend: {
-                  display: false
-                },
-                tooltip: {
-                  xAlign: 'center',
-                  displayColors: false,
-                  callbacks: {
-                    label: function (tooltipItem, data) {
-                      return chart.data.datasets[tooltipItem.datasetIndex].label;
-                    }
-                  }
-                },
-              },
-              scales: {
-                y: {
-                  display: false,
-                  beginAtZero: true,
-                  grid: {
-                    drawBorder: false,
-                  },
-                  stacked: true,
-                },
-                x: {
-                  type: 'time',
-                  time: {
-                    unit: 'minute',
-                    stepSize: 1,
-                    displayFormats: {
-                      hour: "HH:mm, dd MMM"
-                    }
-                  },
-                  min: intervals[0].start,
-                  max: new Date(),
-                  stacked: true,
-                },
-              }
-            }
-          });
-        }
-    );
+    updateButtons(btnElement);
+    drawChart(hours);
   }
 
-  loadChart(datasize);
+  function updateButtons(activeBtn) {
+    document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+    if(activeBtn) activeBtn.classList.add('active');
+  }
 
+  function drawChart(hours) {
+    const now = new Date().getTime();
+    const minTime = now - (hours * 60 * 60 * 1000);
+    processChart(globalFeeds, minTime, now);
+  }
+
+  function handleError(error) {
+    console.error("Error:", error);
+    document.getElementById('statusText').innerText = "Помилка";
+    document.getElementById('pageLoading').style.display = 'none';
+  }
+
+  function calculate3xTimeout(feeds) {
+    if (!feeds || feeds.length < 10) return 5;
+    const sample = feeds.slice(-50);
+    const diffs = [];
+    for (let i = 1; i < sample.length; i++) {
+      const diff = (new Date(sample[i].created_at) - new Date(sample[i-1].created_at)) / 1000;
+      if (diff > 0 && diff < 3600) diffs.push(diff);
+    }
+    if (diffs.length === 0) return 5;
+    diffs.sort((a, b) => a - b);
+    const medianSec = diffs[Math.floor(diffs.length / 2)];
+    const timeoutSec = medianSec * 3;
+    const finalTimeoutMin = Math.max(timeoutSec / 60, 1.5);
+
+    document.getElementById('debugInfo').innerHTML =
+            `Інтервал пінгів: <b>${Math.round(medianSec)} сек</b>.<br>` +
+            `Поріг розриву (3x): <b>${finalTimeoutMin.toFixed(1)} хв</b>`;
+    return finalTimeoutMin;
+  }
+
+  function updateCurrentStatus(feeds) {
+    if (!feeds || feeds.length === 0) return;
+    const now = new Date().getTime();
+    const lastFeed = feeds[feeds.length - 1];
+    const lastEntryTime = new Date(lastFeed.created_at).getTime();
+    const minutesSinceLast = (now - lastEntryTime) / (1000 * 60);
+
+    const statusIcon = document.getElementById('statusIcon');
+    const statusText = document.getElementById('statusText');
+    const durationText = document.getElementById('durationText');
+    const lastSeen = document.getElementById('lastSeen');
+
+    const isOnline = minutesSinceLast <= detectedTimeoutMinutes;
+
+    if (isOnline) {
+      statusIcon.innerText = "💡";
+      statusText.innerText = "Світло Є";
+      statusText.className = "status-text online";
+      let startTime = lastEntryTime;
+      for (let i = feeds.length - 1; i > 0; i--) {
+        const current = new Date(feeds[i].created_at).getTime();
+        const prev = new Date(feeds[i-1].created_at).getTime();
+        const diffMins = (current - prev) / (1000 * 60);
+        if (diffMins > detectedTimeoutMinutes) {
+          startTime = current;
+          break;
+        }
+        startTime = prev;
+      }
+      durationText.innerText = `Триває: ${formatDuration(now - startTime)}`;
+      lastSeen.innerText = `Останній сигнал: ${new Date(lastEntryTime).toLocaleTimeString()}`;
+    } else {
+      statusIcon.innerText = "🕯️";
+      statusText.innerText = "Світла Немає";
+      statusText.className = "status-text offline";
+      durationText.innerText = `Відсутнє: ${formatDuration(now - lastEntryTime)}`;
+      lastSeen.innerText = `Зникло о: ${new Date(lastEntryTime).toLocaleTimeString()}`;
+    }
+  }
+
+  function formatDuration(ms) {
+    const totalMinutes = Math.floor(ms / (1000 * 60));
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    if (hours === 0) return `${minutes} хв`;
+    return `${hours} год ${minutes} хв`;
+  }
+
+  function processChart(feeds, minTime, maxTime) {
+    const ctx = document.getElementById('powerChart').getContext('2d');
+    const chartData = [];
+    let lastTime = 0;
+
+    const visibleFeeds = feeds.filter(f => new Date(f.created_at).getTime() > (minTime - 3600000));
+
+    visibleFeeds.forEach((feed, index) => {
+      const currentTime = new Date(feed.created_at).getTime();
+      if (index > 0) {
+        const diffMinutes = (currentTime - lastTime) / (1000 * 60);
+        if (diffMinutes > detectedTimeoutMinutes) {
+          chartData.push({ x: lastTime + 1000, y: 0 });
+          chartData.push({ x: currentTime - 1000, y: 0 });
+        }
+      }
+      chartData.push({ x: currentTime, y: 1 });
+      lastTime = currentTime;
+    });
+
+    const lastEntry = feeds[feeds.length-1];
+    if (lastEntry) {
+      const lastEntryTime = new Date(lastEntry.created_at).getTime();
+      if ((maxTime - lastEntryTime) / 60000 <= detectedTimeoutMinutes) {
+        chartData.push({ x: maxTime, y: 1 });
+      }
+    }
+
+    const nowLineData = [{ x: maxTime, y: 0 }, { x: maxTime, y: 1.1 }];
+
+    let gradient = ctx.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, 'rgba(52, 199, 89, 0.4)');
+    gradient.addColorStop(1, 'rgba(52, 199, 89, 0.05)');
+
+    if (powerChartInstance) powerChartInstance.destroy();
+
+    powerChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        datasets: [
+          {
+            label: 'Стан',
+            data: chartData,
+            borderColor: '#34c759',
+            borderWidth: 2,
+            backgroundColor: gradient,
+            fill: true,
+            pointRadius: 0,
+            stepped: true,
+            order: 2
+          },
+          {
+            label: 'Зараз',
+            data: nowLineData,
+            borderColor: '#ff3b30',
+            borderWidth: 1.5,
+            borderDash: [5, 5],
+            pointRadius: 0,
+            fill: false,
+            order: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+        scales: {
+          x: {
+            type: 'time',
+            min: minTime,
+            max: maxTime,
+            time: { displayFormats: { hour: 'HH:mm', day: 'dd.MM' } },
+            grid: {
+              display: true, // УВІМКНУЛИ ВЕРТИКАЛЬНУ СІТКУ
+              color: 'rgba(0,0,0,0.05)'
+            },
+            ticks: {
+              maxRotation: 0,
+              autoSkip: true,
+              maxTicksLimit: 10 // ЗБІЛЬШИЛИ КІЛЬКІСТЬ МІТОК ДО 10
+            }
+          },
+          y: { display: false, min: 0, max: 1.2 }
+        }
+      }
+    });
+  }
+
+  function saveChannel() {
+    const val = document.getElementById('channelInput').value.trim();
+    if(val) {
+      localStorage.setItem('ts_channel_id', val);
+      location.reload();
+    } else {
+      alert("Введіть ID каналу");
+    }
+  }
+
+  initialLoad();
+
+  setInterval(() => {
+    if(!isFullHistoryLoaded) initialLoad();
+  }, 30000);
 </script>
-
 </body>
 </html>
